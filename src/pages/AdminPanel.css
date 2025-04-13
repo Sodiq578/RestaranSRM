@@ -1,0 +1,264 @@
+/* Global styles */
+.admin-panel {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #f0f4f8, #d9e6f2);
+    min-height: 100vh;
+  }
+  
+  h1 {
+    text-align: center;
+    font-size: clamp(2rem, 6vw, 2.5rem);
+    margin-bottom: 2rem;
+    color: #2c3e50;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+  }
+  
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+  
+  h2 {
+    font-size: clamp(1.3rem, 4vw, 1.6rem);
+    margin-bottom: 1.2rem;
+    color: #e67e22;
+  }
+  
+  .form-group {
+    display: grid;
+    gap: 1rem;
+  }
+  
+  input[type="text"],
+  input[type="number"] {
+    padding: 0.8rem;
+    border: 2px solid #dfe6e9;
+    border-radius: 8px;
+    font-size: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  
+  input:focus {
+    outline: none;
+    border-color: #1abc9c;
+    box-shadow: 0 0 8px rgba(26, 188, 156, 0.3);
+  }
+  
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    color: #34495e;
+  }
+  
+  .button-group {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  
+  button {
+    padding: 0.8rem 1.6rem;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(45deg, #1abc9c, #16a085);
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.3s;
+  }
+  
+  button:hover {
+    transform: scale(1.05);
+    background: linear-gradient(45deg, #16a085, #1abc9c);
+  }
+  
+  .cancel-btn {
+    background: linear-gradient(45deg, #7f8c8d, #95a5a6);
+  }
+  
+  .cancel-btn:hover {
+    background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+  }
+  
+  .delete-btn {
+    background: linear-gradient(45deg, #e74c3c, #c0392b);
+  }
+  
+  .delete-btn:hover {
+    background: linear-gradient(45deg, #c0392b, #e74c3c);
+  }
+  
+  .auth-message {
+    text-align: center;
+    padding: 3rem;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    margin: 2rem auto;
+    max-width: 500px;
+    animation: fadeIn 0.5s ease;
+  }
+  
+  .empty-message {
+    text-align: center;
+    color: #7f8c8d;
+    font-size: 1rem;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+  }
+  
+  /* Menu and Table Cards */
+  .table-container {
+    display: grid;
+    gap: 1rem;
+  }
+  
+  .menu-card,
+  .table-card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    transition: transform 0.3s ease;
+  }
+  
+  .menu-card:hover,
+  .table-card:hover {
+    transform: translateY(-3px);
+  }
+  
+  .menu-info,
+  .table-info {
+    flex: 1;
+    min-width: 200px;
+  }
+  
+  .menu-info h3,
+  .table-info h3 {
+    font-size: 1.2rem;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+  }
+  
+  .menu-info p,
+  .table-info p {
+    font-size: 0.95rem;
+    color: #34495e;
+    margin: 0.3rem 0;
+  }
+  
+  .menu-actions,
+  .table-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  
+  .edit-waiter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  
+  .edit-waiter input {
+    flex: 1;
+    min-width: 120px;
+  }
+  
+  /* Animations */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Media Queries */
+  @media (max-width: 600px) {
+    .admin-panel {
+      padding: 0 0.5rem;
+    }
+  
+    .card {
+      padding: 1rem;
+    }
+  
+    .form-group {
+      gap: 0.75rem;
+    }
+  
+    input[type="text"],
+    input[type="number"] {
+      font-size: 0.9rem;
+      padding: 0.7rem;
+    }
+  
+    button {
+      padding: 0.7rem 1.2rem;
+      font-size: 0.9rem;
+    }
+  
+    .menu-card,
+    .table-card {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .menu-actions,
+    .table-actions {
+      width: 100%;
+      justify-content: space-between;
+    }
+  
+    .edit-waiter {
+      flex-direction: column;
+    }
+  
+    .edit-waiter input,
+    .edit-waiter button {
+      width: 100%;
+    }
+  }
+  
+  @media (min-width: 601px) and (max-width: 1024px) {
+    .menu-card,
+    .table-card {
+      padding: 0.8rem;
+    }
+  
+    .menu-info h3,
+    .table-info h3 {
+      font-size: 1.1rem;
+    }
+  
+    .menu-info p,
+    .table-info p {
+      font-size: 0.9rem;
+    }
+  }

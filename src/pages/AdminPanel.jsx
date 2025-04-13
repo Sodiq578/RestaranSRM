@@ -1,5 +1,6 @@
 import React, { useContext, useState } from "react";
 import { AppContext } from "../context/AppContext";
+import "./AdminPanel.css";
 
 function AdminPanel() {
   const { menu, addMenuItem, updateMenuItem, deleteMenuItem, tables, addTable, deleteTable, updateTableWaiter, user } = useContext(AppContext);
@@ -10,15 +11,7 @@ function AdminPanel() {
 
   if (!user) {
     return (
-      <div
-        style={{
-          textAlign: "center",
-          padding: "50px",
-          background: "#fff",
-          borderRadius: "10px",
-          boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-        }}
-      >
+      <div className="auth-message">
         <h2>Iltimos, tizimga kiring!</h2>
       </div>
     );
@@ -79,203 +72,147 @@ function AdminPanel() {
   };
 
   return (
-    <div>
-      <h1
-        style={{
-          textAlign: "center",
-          marginBottom: "30px",
-          fontSize: "28px",
-        }}
-      >
-        Admin Panel
-      </h1>
+    <div className="admin-panel">
+      <h1>Admin Panel</h1>
 
       {/* Taom qo‘shish/tahrirlash */}
-      <div
-        style={{
-          background: "#fff",
-          padding: "20px",
-          borderRadius: "10px",
-          boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-          marginBottom: "30px",
-        }}
-      >
-        <h2 style={{ marginBottom: "15px" }}>
-          {editItem ? "Taomni tahrirlash" : "Yangi taom qo‘shish"}
-        </h2>
-        <input
-          type="text"
-          placeholder="Taom nomi"
-          value={editItem ? editItem.name : newItem.name}
-          onChange={(e) =>
-            editItem
-              ? setEditItem({ ...editItem, name: e.target.value })
-              : setNewItem({ ...newItem, name: e.target.value })
-          }
-        />
-        <input
-          type="number"
-          placeholder="Narxi (so‘m)"
-          value={editItem ? editItem.price : newItem.price}
-          onChange={(e) =>
-            editItem
-              ? setEditItem({ ...editItem, price: e.target.value })
-              : setNewItem({ ...newItem, price: e.target.value })
-          }
-        />
-        <input
-          type="text"
-          placeholder="Kategoriya"
-          value={editItem ? editItem.category : newItem.category}
-          onChange={(e) =>
-            editItem
-              ? setEditItem({ ...editItem, category: e.target.value })
-              : setNewItem({ ...newItem, category: e.target.value })
-          }
-        />
-        <label style={{ display: "block", margin: "10px 0" }}>
+      <section className="card">
+        <h2>{editItem ? "Taomni tahrirlash" : "Yangi taom qo‘shish"}</h2>
+        <div className="form-group">
           <input
-            type="checkbox"
-            checked={editItem ? editItem.isBestSeller : newItem.isBestSeller}
+            type="text"
+            placeholder="Taom nomi"
+            value={editItem ? editItem.name : newItem.name}
             onChange={(e) =>
               editItem
-                ? setEditItem({ ...editItem, isBestSeller: e.target.checked })
-                : setNewItem({ ...newItem, isBestSeller: e.target.checked })
+                ? setEditItem({ ...editItem, name: e.target.value })
+                : setNewItem({ ...newItem, name: e.target.value })
             }
+            aria-label="Taom nomi"
           />
-          Eng ko‘p sotilgan
-        </label>
-        <div style={{ display: "flex", gap: "10px", marginTop: "15px" }}>
-          <button onClick={editItem ? handleUpdateMenu : handleAddMenu}>
-            {editItem ? "Yangilash" : "Qo‘shish"}
-          </button>
-          {editItem && (
-            <button
-              onClick={() => setEditItem(null)}
-              style={{ background: "#6c757d" }}
-            >
-              Bekor qilish
+          <input
+            type="number"
+            placeholder="Narxi (so‘m)"
+            value={editItem ? editItem.price : newItem.price}
+            onChange={(e) =>
+              editItem
+                ? setEditItem({ ...editItem, price: e.target.value })
+                : setNewItem({ ...newItem, price: e.target.value })
+            }
+            aria-label="Narxi"
+          />
+          <input
+            type="text"
+            placeholder="Kategoriya"
+            value={editItem ? editItem.category : newItem.category}
+            onChange={(e) =>
+              editItem
+                ? setEditItem({ ...editItem, category: e.target.value })
+                : setNewItem({ ...newItem, category: e.target.value })
+            }
+            aria-label="Kategoriya"
+          />
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={editItem ? editItem.isBestSeller : newItem.isBestSeller}
+              onChange={(e) =>
+                editItem
+                  ? setEditItem({ ...editItem, isBestSeller: e.target.checked })
+                  : setNewItem({ ...newItem, isBestSeller: e.target.checked })
+              }
+              aria-label="Eng ko‘p sotilgan"
+            />
+            Eng ko‘p sotilgan
+          </label>
+          <div className="button-group">
+            <button onClick={editItem ? handleUpdateMenu : handleAddMenu} aria-label={editItem ? "Yangilash" : "Qo‘shish"}>
+              {editItem ? "Yangilash" : "Qo‘shish"}
             </button>
-          )}
+            {editItem && (
+              <button className="cancel-btn" onClick={() => setEditItem(null)} aria-label="Bekor qilish">
+                Bekor qilish
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      </section>
 
       {/* Taomlar ro‘yxati */}
-      <div
-        style={{
-          background: "#fff",
-          padding: "20px",
-          borderRadius: "10px",
-          boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-          marginBottom: "30px",
-        }}
-      >
-        <h2 style={{ marginBottom: "15px" }}>Menyu ro‘yxati</h2>
+      <section className="card">
+        <h2>Menyu ro‘yxati</h2>
         {menu.length === 0 ? (
-          <p style={{ textAlign: "center", color: "#777" }}>Menyu bo‘sh</p>
+          <p className="empty-message">Menyu bo‘sh</p>
         ) : (
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr style={{ background: "#007bff", color: "white" }}>
-                <th style={{ padding: "12px", textAlign: "left" }}>Nomi</th>
-                <th style={{ padding: "12px", textAlign: "left" }}>Narxi</th>
-                <th style={{ padding: "12px", textAlign: "left" }}>Kategoriya</th>
-                <th style={{ padding: "12px", textAlign: "left" }}>Eng ko‘p sotilgan</th>
-                <th style={{ padding: "12px", textAlign: "left" }}>Amallar</th>
-              </tr>
-            </thead>
-            <tbody>
-              {menu.map((item) => (
-                <tr key={item.id} style={{ borderBottom: "1px solid #eee" }}>
-                  <td style={{ padding: "12px" }}>{item.name}</td>
-                  <td style={{ padding: "12px" }}>
-                    {item.price.toLocaleString()} so‘m
-                  </td>
-                  <td style={{ padding: "12px" }}>{item.category}</td>
-                  <td style={{ padding: "12px" }}>{item.isBestSeller ? "Ha" : "Yo‘q"}</td>
-                  <td style={{ padding: "12px" }}>
-                    <button
-                      onClick={() => handleEditMenu(item)}
-                      style={{ marginRight: "10px" }}
-                    >
-                      Tahrirlash
-                    </button>
-                    <button
-                      className="delete"
-                      onClick={() => deleteMenuItem(item.id)}
-                    >
-                      O‘chirish
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="table-container">
+            {menu.map((item) => (
+              <div className="menu-card" key={item.id}>
+                <div className="menu-info">
+                  <h3>{item.name}</h3>
+                  <p><strong>Narxi:</strong> {item.price.toLocaleString()} so‘m</p>
+                  <p><strong>Kategoriya:</strong> {item.category}</p>
+                  <p><strong>Eng ko‘p sotilgan:</strong> {item.isBestSeller ? "Ha" : "Yo‘q"}</p>
+                </div>
+                <div className="menu-actions">
+                  <button onClick={() => handleEditMenu(item)} aria-label="Tahrirlash">
+                    Tahrirlash
+                  </button>
+                  <button className="delete-btn" onClick={() => deleteMenuItem(item.id)} aria-label="O‘chirish">
+                    O‘chirish
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
-      </div>
+      </section>
 
       {/* Stollar boshqaruvi */}
-      <div
-        style={{
-          background: "#fff",
-          padding: "20px",
-          borderRadius: "10px",
-          boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-          marginBottom: "30px",
-        }}
-      >
-        <h2 style={{ marginBottom: "15px" }}>Yangi stol qo‘shish</h2>
-        <input
-          type="text"
-          placeholder="Stol nomi"
-          value={newTableName}
-          onChange={(e) => setNewTableName(e.target.value)}
-        />
-        <button onClick={handleAddTable} style={{ marginTop: "10px" }}>
-          Qo‘shish
-        </button>
-      </div>
+      <section className="card">
+        <h2>Yangi stol qo‘shish</h2>
+        <div className="form-group">
+          <input
+            type="text"
+            placeholder="Stol nomi"
+            value={newTableName}
+            onChange={(e) => setNewTableName(e.target.value)}
+            aria-label="Stol nomi"
+          />
+          <button onClick={handleAddTable} aria-label="Qo‘shish">
+            Qo‘shish
+          </button>
+        </div>
+      </section>
 
       {/* Stollar ro‘yxati */}
-      <div
-        style={{
-          background: "#fff",
-          padding: "20px",
-          borderRadius: "10px",
-          boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-        }}
-      >
-        <h2 style={{ marginBottom: "15px" }}>Stollar ro‘yxati</h2>
+      <section className="card">
+        <h2>Stollar ro‘yxati</h2>
         {tables.length === 0 ? (
-          <p style={{ textAlign: "center", color: "#777" }}>Stollar yo‘q</p>
+          <p className="empty-message">Stollar yo‘q</p>
         ) : (
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr style={{ background: "#007bff", color: "white" }}>
-                <th style={{ padding: "12px", textAlign: "left" }}>Nomi</th>
-                <th style={{ padding: "12px", textAlign: "left" }}>Ofitsiant</th>
-                <th style={{ padding: "12px", textAlign: "left" }}>Amallar</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tables.map((table) => (
-                <tr key={table.id} style={{ borderBottom: "1px solid #eee" }}>
-                  <td style={{ padding: "12px" }}>{table.name}</td>
-                  <td style={{ padding: "12px" }}>
+          <div className="table-container">
+            {tables.map((table) => (
+              <div className="table-card" key={table.id}>
+                <div className="table-info">
+                  <h3>{table.name}</h3>
+                  <p>
+                    <strong>Ofitsiant:</strong>{" "}
                     {editWaiter.id === table.id ? (
-                      <div style={{ display: "flex", gap: "10px" }}>
+                      <div className="edit-waiter">
                         <input
                           type="text"
                           value={editWaiter.waiter}
-                          onChange={(e) =>
-                            setEditWaiter({ ...editWaiter, waiter: e.target.value })
-                          }
+                          onChange={(e) => setEditWaiter({ ...editWaiter, waiter: e.target.value })}
                           placeholder="Ofitsiant ismi"
+                          aria-label="Ofitsiant ismi"
                         />
-                        <button onClick={handleUpdateWaiter}>Saqlash</button>
+                        <button onClick={handleUpdateWaiter} aria-label="Saqlash">
+                          Saqlash
+                        </button>
                         <button
+                          className="cancel-btn"
                           onClick={() => setEditWaiter({ id: null, waiter: "" })}
-                          style={{ background: "#6c757d" }}
+                          aria-label="Bekor qilish"
                         >
                           Bekor
                         </button>
@@ -283,27 +220,21 @@ function AdminPanel() {
                     ) : (
                       table.waiter || "Belgilanmagan"
                     )}
-                  </td>
-                  <td style={{ padding: "12px" }}>
-                    <button
-                      onClick={() => handleEditWaiter(table)}
-                      style={{ marginRight: "10px" }}
-                    >
-                      Ofitsiantni tahrirlash
-                    </button>
-                    <button
-                      className="delete"
-                      onClick={() => deleteTable(table.id)}
-                    >
-                      O‘chirish
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </p>
+                </div>
+                <div className="table-actions">
+                  <button onClick={() => handleEditWaiter(table)} aria-label="Ofitsiantni tahrirlash">
+                    Ofitsiantni tahrirlash
+                  </button>
+                  <button className="delete-btn" onClick={() => deleteTable(table.id)} aria-label="O‘chirish">
+                    O‘chirish
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }

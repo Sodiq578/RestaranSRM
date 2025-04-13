@@ -16,19 +16,23 @@ function Home() {
     : menu.filter((item) => item.category === selectedCategory);
 
   return (
-    <div>
-      <h1
-        style={{
-          textAlign: "center",
-          marginBottom: "30px",
-          fontSize: "28px",
-        }}
-      >
+    <div style={{ padding: "15px", maxWidth: "1400px", margin: "0 auto" }}>
+      <h1 style={{
+        textAlign: "center",
+        marginBottom: "30px",
+        fontSize: "clamp(24px, 4vw, 28px)",
+      }}>
         Restoran Kassa
       </h1>
+      
+      {/* Tables Section */}
       <div style={{ marginBottom: "20px" }}>
         <h2 style={{ marginBottom: "15px" }}>Stollar</h2>
-        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+        <div style={{ 
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))",
+          gap: "10px",
+        }}>
           {tables.map((table) => (
             <div
               key={table.id}
@@ -40,7 +44,6 @@ function Home() {
                 borderRadius: "8px",
                 boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
                 cursor: "pointer",
-                width: "120px",
                 textAlign: "center",
                 transition: "all 0.2s",
                 border: selectedTableId === table.id ? "2px solid #007bff" : "none",
@@ -61,15 +64,38 @@ function Home() {
           ))}
         </div>
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: "20px" }}>
-        <div style={{ width: "50%" }}>
+      
+      {/* Main Content */}
+      <div style={{ 
+        display: "flex", 
+        flexDirection: "column", 
+        gap: "20px",
+        "@media (min-width: 768px)": {
+          flexDirection: "row"
+        }
+      }}>
+        {/* Menu Section */}
+        <div style={{ 
+          width: "100%",
+          "@media (min-width: 768px)": {
+            width: "50%"
+          }
+        }}>
           <h2 style={{ marginBottom: "15px" }}>Menyu</h2>
           <div style={{ marginBottom: "15px" }}>
             <label>Kategoriya: </label>
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              style={{ padding: "5px", marginLeft: "10px", borderRadius: "5px" }}
+              style={{ 
+                padding: "8px", 
+                marginLeft: "10px", 
+                borderRadius: "5px",
+                width: "60%",
+                "@media (min-width: 480px)": {
+                  width: "auto"
+                }
+              }}
             >
               {categories.map((cat) => (
                 <option key={cat} value={cat}>
@@ -79,23 +105,43 @@ function Home() {
             </select>
           </div>
           {filteredMenu.length === 0 ? (
-            <p style={{ textAlign: "center", color: "#777" }}>Menyu bo‘sh</p>
+            <p style={{ textAlign: "center", color: "#777" }}>Menyu bo'sh</p>
           ) : (
             <>
-              <h3 style={{ marginBottom: "10px" }}>Eng ko‘p sotilganlar</h3>
-              {filteredMenu
-                .filter((item) => item.isBestSeller)
-                .map((item) => (
+              <h3 style={{ marginBottom: "10px" }}>Eng ko'p sotilganlar</h3>
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
+                gap: "15px",
+                marginBottom: "20px"
+              }}>
+                {filteredMenu
+                  .filter((item) => item.isBestSeller)
+                  .map((item) => (
+                    <MenuItem key={item.id} item={item} />
+                  ))}
+              </div>
+              <h3 style={{ marginBottom: "10px" }}>Barcha taomlar</h3>
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
+                gap: "15px"
+              }}>
+                {filteredMenu.map((item) => (
                   <MenuItem key={item.id} item={item} />
                 ))}
-              <h3 style={{ marginBottom: "10px", marginTop: "20px" }}>Barcha taomlar</h3>
-              {filteredMenu.map((item) => (
-                <MenuItem key={item.id} item={item} />
-              ))}
+              </div>
             </>
           )}
         </div>
-        <div style={{ width: "50%" }}>
+        
+        {/* Orders Section */}
+        <div style={{ 
+          width: "100%",
+          "@media (min-width: 768px)": {
+            width: "50%"
+          }
+        }}>
           {selectedTable ? (
             <>
               <h2 style={{ marginBottom: "15px" }}>{selectedTable.name} buyurtmalari</h2>
@@ -111,6 +157,8 @@ function Home() {
           )}
         </div>
       </div>
+      
+      {/* Payment Modal */}
       {showPayment && selectedTableId && (
         <PaymentModal
           tableId={selectedTableId}
