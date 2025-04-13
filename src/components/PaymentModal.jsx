@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { AppContext } from "../context/AppContext";
 import jsPDF from "jspdf";
-import restaurantLogo from "../assets/logo.png"; // Ensure you have a high-quality logo
+import restaurantLogo from "../assets/logo1.png"; // Ensure you have a high-quality logo
 import "./PaymentModal.css";
 
 function PaymentModal({ tableId, onClose }) {
