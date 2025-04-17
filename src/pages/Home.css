@@ -4,9 +4,11 @@
   flex-direction: column;
   min-height: 100vh;
   background: linear-gradient(145deg, #f7fafc 0%, #e6e9ed 100%);
-  font-family: 'Poppins', sans-serif;
-  padding: 24px;
+  font-family: 'Poppins', Arial, sans-serif;
+  padding: 1.5rem;
   box-sizing: border-box;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 /* Header Styles */
@@ -14,27 +16,26 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(255, 255, 255, 0.95);
-  padding: 16px 24px;
-  border-radius: 12px;
+  background: rgba(44, 62, 80, 0.95);
+  color: #ffffff;
+  padding: 1rem 1.5rem;
+  border-radius: 0.5rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  margin-bottom: 24px;
+  margin-bottom: 1.5rem;
   backdrop-filter: blur(10px);
 }
 
 .app-header h1 {
-  font-size: 26px;
+  font-size: 1.5rem;
   font-weight: 600;
-  color: #1a202c;
   margin: 0;
   letter-spacing: -0.5px;
 }
 
 .header-info {
   display: flex;
-  gap: 16px;
-  font-size: 14px;
-  color: #4a5568;
+  gap: 1rem;
+  font-size: 0.875rem;
   font-weight: 500;
 }
 
@@ -42,10 +43,11 @@
 .user-info {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
   background: #edf2f7;
-  border-radius: 8px;
+  border-radius: 0.5rem;
+  color: #4a5568;
   transition: background 0.3s ease;
 }
 
@@ -55,84 +57,49 @@
 }
 
 .header-icon {
-  font-size: 16px;
-  color: #718096;
-}
-
-/* Statistics Dashboard */
-.stats-dashboard {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-.stat-card {
-  flex: 1;
-  min-width: 200px;
-  background: #fff;
-  border-radius: 8px;
-  padding: 15px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.stat-card h3 {
-  margin-top: 0;
-  color: #555;
   font-size: 1rem;
-}
-
-.stat-card p {
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin: 10px 0 0;
-}
-
-.stat-card ul {
-  padding-left: 20px;
-  margin: 10px 0 0;
+  color: #718096;
 }
 
 /* Tables Section */
 .tables-section {
-  margin-bottom: 32px;
+  margin-bottom: 2rem;
 }
 
 .tables-section h2 {
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 600;
   color: #1a202c;
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .section-icon {
-  font-size: 18px;
+  font-size: 1.125rem;
   color: #3182ce;
 }
 
 .section-badge {
   background: #bee3f8;
   color: #2b6cb0;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 12px;
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.75rem;
+  font-size: 0.75rem;
   font-weight: 500;
-  margin-left: 8px;
 }
 
 .tables-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: 1rem;
 }
 
 .table-card {
   background: #ffffff;
-  border-radius: 10px;
-  padding: 16px;
+  border-radius: 0.625rem;
+  padding: 1rem;
   text-align: center;
   cursor: pointer;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -141,25 +108,8 @@
   overflow: hidden;
 }
 
-.table-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 3px;
-  background: linear-gradient(90deg, #3182ce, #63b3ed);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.table-card:hover::before,
-.table-card.active::before {
-  opacity: 1;
-}
-
 .table-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-0.25rem);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
 }
 
@@ -177,129 +127,92 @@
 }
 
 .table-number {
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 600;
   color: #1a202c;
-  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
 }
 
 .order-count {
   display: inline-block;
   background: #e53e3e;
   color: #ffffff;
-  padding: 4px 8px;
-  border-radius: 10px;
-  font-size: 12px;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.625rem;
+  font-size: 0.75rem;
   font-weight: 500;
 }
 
 .waiter-info {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #4a5568;
-  margin-top: 8px;
+  margin-top: 0.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 0.375rem;
 }
 
 .waiter-icon {
-  font-size: 14px;
+  font-size: 0.875rem;
   color: #718096;
 }
 
 .table-total {
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #2f855a;
-  margin-top: 8px;
+  margin-top: 0.5rem;
 }
 
 /* Main Content Layout */
 .main-content {
   display: flex;
-  gap: 24px;
+  gap: 1.5rem;
   flex: 1;
 }
 
 /* Menu Section */
 .menu-section {
   flex: 2;
-  background: linear-gradient(145deg, #f7fafc, #ffffff);
-  border-radius: 16px;
-  padding: 24px;
+  background: #ffffff;
+  border-radius: 1rem;
+  padding: 1.5rem;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 1.5rem;
 }
 
 .menu-section h2 {
-  font-size: 24px;
+  font-size: 1.5rem;
   font-weight: 700;
-  background: linear-gradient(90deg, #2d3748, #4a5568);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #1a202c;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.625rem;
 }
 
-.menu-controls {
-  display: flex;
-  align-items: center;
-}
-
-/* Search Box */
-.search-box {
-  position: relative;
-  margin-right: 15px;
-}
-
-.search-box input {
-  padding: 8px 15px 8px 35px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  width: 200px;
-  transition: all 0.3s ease;
-}
-
-.search-box input:focus {
-  outline: none;
-  border-color: #3182ce;
-  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2);
-}
-
-.search-box .search-icon {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #777;
-}
-
-/* Category Filter */
 .category-filter select {
-  padding: 8px 32px 8px 12px;
-  border-radius: 8px;
+  padding: 0.5rem 2rem 0.5rem 0.75rem;
+  border-radius: 0.5rem;
   border: 1px solid #e2e8f0;
   background: #f7fafc;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
   appearance: none;
   background-image: url('data:image/svg+xml;utf8,<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>');
   background-repeat: no-repeat;
-  background-position: right 8px center;
-  background-size: 14px;
+  background-position: right 0.5rem center;
+  background-size: 0.875rem;
   width: 100%;
-  max-width: 200px;
+  max-width: 12.5rem;
 }
 
 .category-filter select:focus {
@@ -310,174 +223,82 @@
 
 /* Menu Subsections */
 .menu-subsection {
-  margin-bottom: 24px;
+  margin-bottom: 1.5rem;
 }
 
 .menu-subsection h3 {
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 600;
   color: #1a202c;
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 .subsection-icon {
-  font-size: 16px;
+  font-size: 1rem;
   color: #d69e2e;
 }
 
 .subsection-badge {
   background: #fefcbf;
   color: #744210;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 12px;
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.75rem;
+  font-size: 0.75rem;
   font-weight: 500;
 }
 
 /* Menu Grid */
 .menu-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr));
+  gap: 1rem;
 }
 
 .menu-grid.highlight {
   background: #f1f5f9;
-  padding: 16px;
-  border-radius: 10px;
-  margin-bottom: 20px;
+  padding: 1rem;
+  border-radius: 0.625rem;
+  margin-bottom: 1.25rem;
   border: 1px solid #e2e8f0;
 }
 
 /* Empty State */
 .empty-state {
   text-align: center;
-  padding: 40px 16px;
+  padding: 2.5rem 1rem;
   color: #4a5568;
   background: #f7fafc;
-  border-radius: 10px;
+  border-radius: 0.625rem;
   border: 1px dashed #e2e8f0;
 }
 
 .empty-icon {
-  font-size: 40px;
-  margin-bottom: 12px;
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
   color: #a0aec0;
-  transition: color 0.3s ease;
-}
-
-.empty-state:hover .empty-icon {
-  color: #718096;
 }
 
 .empty-state p {
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 500;
-  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
 }
 
 .empty-state small {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #a0aec0;
-}
-
-.empty-state button {
-  background: #3182ce;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  margin-top: 12px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.empty-state button:hover {
-  background: #2b6cb0;
-}
-
-.error-state {
-  border-left: 4px solid #ff5722;
 }
 
 /* Orders Section */
 .orders-section {
   flex: 1;
   background: #ffffff;
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.payment-button {
-  background: linear-gradient(90deg, #3182ce, #2b6cb0);
-  color: #ffffff;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.payment-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(49, 130, 206, 0.3);
-}
-
-.payment-button:active {
-  transform: translateY(0);
-}
-
-.button-icon {
-  font-size: 14px;
-}
-
-/* Order Status Tabs */
-.order-status-tabs {
-  display: flex;
-  background: #f5f5f5;
-  border-radius: 8px;
-  padding: 5px;
-  margin-bottom: 15px;
-}
-
-.status-tab {
-  flex: 1;
-  text-align: center;
-  padding: 10px;
-  cursor: pointer;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 14px;
-  transition: all 0.3s ease;
-}
-
-.status-tab.active {
-  background: #fff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.status-icon {
-  font-size: 16px;
-}
-
-.status-badge {
-  background: #ff5722;
-  color: white;
-  border-radius: 10px;
-  padding: 2px 8px;
-  font-size: 0.8rem;
 }
 
 /* Payment Modal */
@@ -492,31 +313,28 @@
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  animation: fadeIn 0.3s ease;
-  padding: 16px;
+  padding: 1rem;
 }
 
 .payment-modal-content {
   background: #ffffff;
-  border-radius: 12px;
-  padding: 24px;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
   width: 100%;
-  max-width: 500px;
+  max-width: 31.25rem;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   position: relative;
-  animation: slideUp 0.3s ease;
 }
 
 .modal-close {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 0.75rem;
+  right: 0.75rem;
   background: none;
   border: none;
-  font-size: 18px;
+  font-size: 1.125rem;
   color: #4a5568;
   cursor: pointer;
-  transition: color 0.2s ease;
 }
 
 .modal-close:hover {
@@ -524,69 +342,71 @@
 }
 
 .modal-title {
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 600;
   color: #1a202c;
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .modal-icon {
-  font-size: 18px;
+  font-size: 1.125rem;
   color: #3182ce;
 }
 
 /* Receipt Styles */
-.receipt {
+.receipt-preview {
   background: #f7fafc;
-  border-radius: 10px;
-  padding: 16px;
-  margin-bottom: 16px;
+  border-radius: 0.625rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
   border: 1px solid #e2e8f0;
 }
 
 .receipt-header {
-  margin-bottom: 12px;
+  margin-bottom: 0.75rem;
   border-bottom: 1px solid #e2e8f0;
-  padding-bottom: 8px;
+  padding-bottom: 0.5rem;
   text-align: center;
 }
 
-.receipt-header h3 {
-  font-size: 16px;
+.restaurant-name {
+  font-size: 1rem;
   font-weight: 600;
   color: #1a202c;
-  margin-bottom: 6px;
+  margin-bottom: 0.375rem;
 }
 
-.receipt-header p {
-  font-size: 13px;
+.restaurant-address {
+  font-size: 0.8125rem;
   color: #4a5568;
-  margin-bottom: 4px;
+  margin-bottom: 0.25rem;
 }
 
 .receipt-meta {
   display: flex;
   justify-content: space-between;
-  margin: 10px 0;
-  font-size: 0.9rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.75rem;
   color: #4a5568;
+  margin: 0.625rem 0;
 }
 
 .receipt-items {
-  margin-bottom: 12px;
+  margin-bottom: 0.75rem;
 }
 
 .receipt-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
-  padding: 8px 0;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
   border-bottom: 1px dashed #e2e8f0;
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .receipt-item.header {
@@ -609,146 +429,92 @@
 
 .receipt-footer {
   border-top: 1px solid #e2e8f0;
-  padding-top: 8px;
+  padding-top: 0.5rem;
+  text-align: center;
 }
 
-.receipt-total,
-.receipt-tax,
-.receipt-grand-total {
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-  margin-bottom: 6px;
+.thank-you {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #2f855a;
+  margin-bottom: 0.5rem;
+}
+
+.contact-info {
+  font-size: 0.75rem;
+  color: #4a5568;
 }
 
 .receipt-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #1a202c;
+  margin-top: 0.5rem;
 }
 
 .receipt-total span:last-child {
   color: #2f855a;
 }
 
-.receipt-grand-total {
-  font-weight: 700;
-  font-size: 16px;
-  margin-top: 10px;
-  padding-top: 6px;
-  border-top: 1px dashed #cbd5e0;
-}
-
-.receipt-thankyou {
-  text-align: center;
-  margin-top: 20px;
-  font-style: italic;
-  padding: 10px;
-  border-top: 1px dashed #ccc;
-  color: #4a5568;
-}
-
 /* Modal Actions */
 .modal-actions {
   display: flex;
-  gap: 12px;
+  gap: 0.75rem;
   justify-content: flex-end;
 }
 
-.confirm-button {
-  background: linear-gradient(90deg, #2f855a, #38a169);
-  color: #ffffff;
-  padding: 8px 16px;
+.btn {
+  padding: 0.5rem 1rem;
   border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.confirm-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(47, 133, 90, 0.3);
-}
-
-.print-button {
-  background: linear-gradient(90deg, #4caf50, #2e7d32);
-  color: #ffffff;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 0.375rem;
 }
 
-.print-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+.btn-primary {
+  background: linear-gradient(90deg, #3182ce, #2b6cb0);
+  color: #ffffff;
 }
 
-.cancel-button {
+.btn-primary:hover {
+  transform: translateY(-0.125rem);
+  box-shadow: 0 4px 12px rgba(49, 130, 206, 0.3);
+}
+
+.btn-secondary {
   background: #e2e8f0;
   color: #4a5568;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s ease;
 }
 
-.cancel-button:hover {
+.btn-secondary:hover {
   background: #cbd5e0;
 }
 
 /* Dark Mode */
 .dark-mode {
-  background-color: #1a1a1a;
+  background: #1a1a1a;
   color: #f0f0f0;
 }
 
+.dark-mode .home-container,
 .dark-mode .app-header,
 .dark-mode .tables-section,
 .dark-mode .menu-section,
 .dark-mode .orders-section,
-.dark-mode .stats-dashboard,
 .dark-mode .payment-modal-content,
-.dark-mode .stat-card,
 .dark-mode .table-card,
-.dark-mode .menu-item-card,
-.dark-mode .order-item,
-.dark-mode .category-select,
-.dark-mode .search-box input {
-  background-color: #2d2d2d;
+.dark-mode .category-filter select,
+.dark-mode .receipt-preview {
+  background: #2d2d2d;
   color: #f0f0f0;
   border-color: #444;
-}
-
-.dark-mode .search-box input {
-  background-color: #3d3d3d;
-}
-
-.dark-mode .empty-state {
-  background-color: #2d2d2d;
-  border-color: #444;
-}
-
-.dark-mode .app-header h1 {
-  background: linear-gradient(90deg, #a0aec0, #718096);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.dark-mode .menu-section h2 {
-  background: linear-gradient(90deg, #a0aec0, #718096);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 
 .dark-mode .section-badge {
@@ -761,45 +527,14 @@
   color: #e2e8f0;
 }
 
-.dark-mode .order-status-tabs {
-  background: #4a5568;
-}
-
-.dark-mode .status-tab.active {
-  background: #2d3748;
-}
-
-.dark-mode .receipt {
-  background: #2d3748;
-  border-color: #4a5568;
-}
-
 .dark-mode .receipt-header,
-.dark-mode .receipt-footer {
-  border-color: #4a5568;
-}
-
+.dark-mode .receipt-footer,
 .dark-mode .receipt-item {
   border-color: #4a5568;
 }
 
 .dark-mode .item-name {
   color: #f0f0f0;
-}
-
-/* Dark mode toggle */
-.dark-mode-toggle {
-  background: none;
-  border: none;
-  color: inherit;
-  font-size: 1.2rem;
-  cursor: pointer;
-  margin-left: 15px;
-  transition: transform 0.3s ease;
-}
-
-.dark-mode-toggle:hover {
-  transform: scale(1.1);
 }
 
 /* Animations */
@@ -809,7 +544,7 @@
 }
 
 @keyframes slideUp {
-  from { transform: translateY(50px); opacity: 0; }
+  from { transform: translateY(3.125rem); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
 
@@ -817,38 +552,33 @@
 @media (max-width: 992px) {
   .main-content {
     flex-direction: column;
-    gap: 20px;
+    gap: 1.25rem;
   }
 
   .tables-grid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
   }
 
   .menu-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
   }
 
   .section-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
+    gap: 0.75rem;
   }
 
   .payment-modal-content {
     max-width: 90%;
   }
 
-  .payment-button {
-    width: 100%;
-    justify-content: center;
-  }
-
   .app-header {
-    padding: 12px 16px;
+    padding: 0.75rem 1rem;
   }
 
   .app-header h1 {
-    font-size: 22px;
+    font-size: 1.375rem;
   }
 
   .category-filter select {
@@ -858,86 +588,86 @@
 
 @media (max-width: 768px) {
   .home-container {
-    padding: 16px;
+    padding: 1rem;
   }
 
   .app-header {
     flex-direction: column;
-    gap: 12px;
+    gap: 0.75rem;
     text-align: center;
-    padding: 12px 16px;
+    padding: 0.75rem 1rem;
   }
 
   .app-header h1 {
-    font-size: 20px;
+    font-size: 1.25rem;
   }
 
   .header-info {
     flex-direction: column;
-    gap: 8px;
+    gap: 0.5rem;
   }
 
   .tables-section h2,
   .menu-section h2,
   .menu-subsection h3 {
-    font-size: 16px;
+    font-size: 1rem;
   }
 
   .section-icon,
   .subsection-icon {
-    font-size: 16px;
+    font-size: 1rem;
   }
 
   .tables-grid {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(6.25rem, 1fr));
+    gap: 0.75rem;
   }
 
   .table-card {
-    padding: 12px;
+    padding: 0.75rem;
   }
 
   .table-number {
-    font-size: 16px;
+    font-size: 1rem;
   }
 
   .order-count,
   .waiter-info,
   .table-total {
-    font-size: 11px;
+    font-size: 0.6875rem;
   }
 
   .menu-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(8.75rem, 1fr));
+    gap: 0.75rem;
   }
 
-  .payment-button {
-    padding: 8px;
-    font-size: 13px;
+  .menu-section,
+  .orders-section {
+    padding: 1rem;
   }
 
   .empty-state {
-    padding: 24px 12px;
+    padding: 1.5rem 0.75rem;
   }
 
   .empty-icon {
-    font-size: 32px;
+    font-size: 2rem;
   }
 
   .empty-state p {
-    font-size: 14px;
+    font-size: 0.875rem;
   }
 
   .empty-state small {
-    font-size: 11px;
+    font-size: 0.6875rem;
   }
 
   .receipt-item {
     flex-direction: column;
     align-items: flex-start;
-    gap: 4px;
-    font-size: 12px;
+    gap: 0.25rem;
+    font-size: 0.75rem;
   }
 
   .item-name,
@@ -949,575 +679,175 @@
 
   .modal-actions {
     flex-direction: column;
-    gap: 8px;
+    gap: 0.5rem;
   }
 
-  .confirm-button,
-  .cancel-button {
+  .btn {
     width: 100%;
     text-align: center;
-    padding: 8px;
-    font-size: 13px;
+    padding: 0.5rem;
+    font-size: 0.8125rem;
   }
 
   .payment-modal {
-    padding: 12px;
+    padding: 0.75rem;
   }
 
   .payment-modal-content {
-    padding: 16px;
+    padding: 1rem;
   }
 
   .modal-title {
-    font-size: 16px;
+    font-size: 1rem;
   }
 
   .modal-icon {
-    font-size: 16px;
+    font-size: 1rem;
   }
 
-  .receipt-header h3 {
-    font-size: 14px;
+  .restaurant-name {
+    font-size: 0.875rem;
   }
 
-  .receipt-header span {
-    font-size: 12px;
+  .restaurant-address {
+    font-size: 0.75rem;
   }
 
   .receipt-total {
-    font-size: 13px;
+    font-size: 0.8125rem;
   }
 }
 
 @media (max-width: 480px) {
   .home-container {
-    padding: 12px;
+    padding: 0.75rem;
   }
 
   .app-header {
-    padding: 10px 12px;
+    padding: 0.625rem 0.75rem;
   }
 
   .app-header h1 {
-    font-size: 18px;
+    font-size: 1.125rem;
   }
 
   .header-info {
-    gap: 6px;
+    gap: 0.375rem;
   }
 
   .time-display,
   .user-info {
-    padding: 4px 8px;
-    font-size: 12px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
   }
 
   .header-icon {
-    font-size: 14px;
+    font-size: 0.875rem;
   }
 
   .tables-section h2,
   .menu-section h2,
   .menu-subsection h3 {
-    font-size: 14px;
+    font-size: 0.875rem;
   }
 
   .section-icon,
   .subsection-icon {
-    font-size: 14px;
+    font-size: 0.875rem;
   }
 
   .section-badge,
   .subsection-badge {
-    font-size: 11px;
-    padding: 3px 8px;
+    font-size: 0.6875rem;
+    padding: 0.1875rem 0.5rem;
   }
 
   .tables-grid {
-    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(5.625rem, 1fr));
+    gap: 0.625rem;
   }
 
   .table-card {
-    padding: 10px;
+    padding: 0.625rem;
   }
 
   .table-number {
-    font-size: 14px;
+    font-size: 0.875rem;
   }
 
   .order-count,
   .waiter-info,
   .table-total {
-    font-size: 10px;
+    font-size: 0.625rem;
   }
 
   .waiter-icon {
-    font-size: 12px;
+    font-size: 0.75rem;
   }
 
   .menu-grid {
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: 0.625rem;
   }
 
   .menu-section,
   .orders-section {
-    padding: 16px;
-  }
-
-  .payment-button {
-    padding: 6px;
-    font-size: 12px;
-  }
-
-  .button-icon {
-    font-size: 12px;
-  }
-
-  .empty-state {
-    padding: 20px 10px;
-  }
-
-  .empty-icon {
-    font-size: 28px;
-  }
-
-  .empty-state p {
-    font-size: 13px;
-  }
-
-  .empty-state small {
-    font-size: 10px;
+    padding: 0.75rem;
   }
 
   .category-filter select {
-    padding: 6px 28px 6px 10px;
-    font-size: 13px;
-    background-size: 12px;
-    background-position: right 6px center;
+    padding: 0.375rem 1.75rem 0.375rem 0.625rem;
+    font-size: 0.8125rem;
+    background-size: 0.75rem;
+    background-position: right 0.375rem center;
   }
 
   .payment-modal {
-    padding: 8px;
+    padding: 0.5rem;
   }
 
   .payment-modal-content {
-    padding: 12px;
+    padding: 0.75rem;
     max-width: 95%;
   }
 
   .modal-close {
-    top: 10px;
-    right: 10px;
-    font-size: 16px;
+    top: 0.625rem;
+    right: 0.625rem;
+    font-size: 1rem;
   }
 
   .modal-title {
-    font-size: 14px;
+    font-size: 0.875rem;
   }
 
   .modal-icon {
-    font-size: 14px;
+    font-size: 0.875rem;
   }
 
-  .receipt {
-    padding: 12px;
+  .receipt-preview {
+    padding: 0.75rem;
   }
 
-  .receipt-header h3 {
-    font-size: 13px;
+  .restaurant-name {
+    font-size: 0.8125rem;
   }
 
-  .receipt-header span {
-    font-size: 11px;
+  .restaurant-address {
+    font-size: 0.6875rem;
   }
 
   .receipt-item {
-    font-size: 11px;
-    padding: 6px 0;
+    font-size: 0.6875rem;
+    padding: 0.375rem 0;
   }
 
   .receipt-total {
-    font-size: 12px;
+    font-size: 0.75rem;
   }
 
-  .confirm-button,
-  .cancel-button {
-    padding: 6px;
-    font-size: 12px;
+  .btn {
+    padding: 0.375rem;
+    font-size: 0.75rem;
   }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* Umumiy stillar */
-.home-container {
-  font-family: Arial, sans-serif;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: #f4f6f9; /* Och kulrang fon */
-}
-
-/* Sarlavha */
-.app-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #2c3e50; /* To‘q ko‘k */
-  color: #ffffff; /* Oq matn */
-  padding: 15px 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
-
-.app-header h1 {
-  font-size: 24px;
-  margin: 0;
-}
-
-.header-info {
-  display: flex;
-  gap: 20px;
-}
-
-.time-display,
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 14px;
-}
-
-.header-icon {
-  color: #3498db; /* Ochiq ko‘k */
-}
-
-/* Stollar bo‘limi */
-.tables-section {
-  margin-bottom: 20px;
-}
-
-.tables-section h2 {
-  font-size: 20px;
-  color: #2c3e50; /* To‘q ko‘k */
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.section-icon {
-  color: #e74c3c; /* Qizil */
-}
-
-.section-badge {
-  background-color: #3498db; /* Ochiq ko‘k */
-  color: #ffffff; /* Oq */
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 12px;
-}
-
-.tables-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 15px;
-  margin-top: 15px;
-}
-
-.table-card {
-  background-color: #ffffff; /* Oq */
-  border: 2px solid #ecf0f1; /* Och kulrang chegara */
-  border-radius: 8px;
-  padding: 15px;
-  text-align: center;
-  cursor: pointer;
-  transition: transform 0.2s, border-color 0.2s;
-}
-
-.table-card:hover {
-  transform: translateY(-3px);
-  border-color: #3498db; /* Ochiq ko‘k */
-}
-
-.table-card.active {
-  border-color: #2ecc71; /* Yashil */
-  background-color: #e8f5e9; /* Och yashil */
-}
-
-.table-card.occupied {
-  background-color: #fef5e7; /* Och sariq */
-}
-
-.table-number {
-  font-size: 18px;
-  font-weight: bold;
-  color: #2c3e50; /* To‘q ko‘k */
-}
-
-.order-count {
-  display: block;
-  font-size: 12px;
-  color: #e74c3c; /* Qizil */
-  margin-top: 5px;
-}
-
-.waiter-info {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  font-size: 12px;
-  color: #7f8c8d; /* Kulrang */
-  margin-top: 5px;
-}
-
-.waiter-icon {
-  color: #3498db; /* Ochiq ko‘k */
-}
-
-.table-total {
-  font-size: 14px;
-  font-weight: bold;
-  color: #2ecc71; /* Yashil */
-  margin-top: 5px;
-}
-
-/* Asosiy kontent */
-.main-content {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 20px;
-}
-
-/* Menyu bo‘limi */
-.menu-section {
-  background-color: #ffffff; /* Oq */
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-}
-
-.category-filter {
-  display: flex;
-  align-items: center;
-}
-
-.category-select {
-  padding: 8px;
-  border-radius: 5px;
-  border: 1px solid #bdc3c7; /* Kulrang chegara */
-  background-color: #ecf0f1; /* Och kulrang */
-  font-size: 14px;
-  color: #2c3e50; /* To‘q ko‘k */
-}
-
-.empty-state {
-  text-align: center;
-  padding: 20px;
-  color: #7f8c8d; /* Kulrang */
-}
-
-.empty-icon {
-  font-size: 40px;
-  color: #bdc3c7; /* Kulrang */
-  margin-bottom: 10px;
-}
-
-.menu-subsection {
-  margin-top: 20px;
-}
-
-.menu-subsection h3 {
-  font-size: 18px;
-  color: #2c3e50; /* To‘q ko‘k */
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.subsection-icon {
-  color: #f1c40f; /* Sariq */
-}
-
-.subsection-badge {
-  background-color: #e74c3c; /* Qizil */
-  color: #ffffff ; /* Oq */
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 12px;
-}
-
-.menu-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 15px;
-  margin-top: 15px;
-}
-
-.menu-grid.highlight {
-  background-color: #fff8e1; /* Och sariq */
-  padding: 10px;
-  border-radius: 5px;
-}
-
-/* Buyurtmalar bo‘limi */
-.orders-section {
-  background-color: #ffffff; /* Oq */
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* To‘lov modal oynasi */
-.payment-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* Yarim shaffof qora */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.payment-modal-content {
-  background-color: #ffffff; /* Oq */
-  padding: 20px;
-  border-radius: 8px;
-  width: 400px;
-  max-width: 90%;
-  position: relative;
-}
-
-.modal-close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
-  border: none;
-  font-size: 18px;
-  color: #e74c3c; /* Qizil */
-  cursor: pointer;
-}
-
-.modal-title {
-  font-size: 20px;
-  color: #2c3e50; /* To‘q ko‘k */
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 15px;
-}
-
-.modal-icon {
-  color: #3498db; /* Ochiq ko‘k */
-}
-
-.receipt {
-  border: 1px solid #ecf0f1; /* Och kulrang */
-  padding: 15px;
-  border-radius: 5px;
-}
-
-.receipt-header {
-  margin-bottom: 10px;
-}
-
-.receipt-header h3 {
-  font-size: 16px;
-  color: #2c3e50; /* To‘q ko‘k */
-  margin-bottom: 5px;
-}
-
-.receipt-header span {
-  display: block;
-  font-size: 12px;
-  color: #7f8c8d; /* Kulrang */
-}
-
-.receipt-items {
-  margin-bottom: 10px;
-}
-
-.receipt-item {
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-  color: #2c3e50; /* To‘q ko‘k */
-  margin-bottom: 5px;
-}
-
-.item-name {
-  flex: 1;
-}
-
-.item-quantity {
-  width: 50px;
-  text-align: center;
-}
-
-.item-price {
-  width: 80px;
-  text-align: right;
-}
-
-.receipt-footer {
-  border-top: 1px solid #ecf0f1; /* Och kulrang */
-  padding-top: 10px;
-}
-
-.receipt-total {
-  display: flex;
-  justify-content: space-between;
-  font-size: 16px;
-  font-weight: bold;
-  color: #2ecc71; /* Yashil */
-}
-
-.modal-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.confirm-button {
-  background-color: #2ecc71; /* Yashil */
-  color: #ffffff; /* Oq */
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  flex: 1;
-}
-
-.cancel-button {
-  background-color: #e74c3c; /* Qizil */
-  color: #ffffff; /* Oq */
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  flex: 1;
 }
