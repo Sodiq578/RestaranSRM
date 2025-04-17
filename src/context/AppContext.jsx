@@ -16,7 +16,6 @@ export const AppProvider = ({ children }) => {
     { id: 8, name: "Stol 8", orders: [], waiter: "", status: "Bo'sh" },
     { id: 9, name: "Stol 9", orders: [], waiter: "", status: "Bo'sh" },
     { id: 10, name: "Stol 10", orders: [], waiter: "", status: "Bo'sh" },
-    
     { id: 11, name: "Stol 11", orders: [], waiter: "", status: "Bo'sh" },
     { id: 12, name: "Stol 12", orders: [], waiter: "", status: "Bo'sh" },
     { id: 13, name: "Stol 13", orders: [], waiter: "", status: "Bo'sh" },
@@ -36,10 +35,11 @@ export const AppProvider = ({ children }) => {
     { id: 27, name: "Stol 27", orders: [], waiter: "", status: "Bo'sh" },
     { id: 28, name: "Stol 28", orders: [], waiter: "", status: "Bo'sh" },
     { id: 29, name: "Stol 29", orders: [], waiter: "", status: "Bo'sh" },
-    { id: 30, name: "Stol 30", orders: [], waiter: "", status: "Bo'sh" }
+    { id: 30, name: "Stol 30", orders: [], waiter: "", status: "Bo'sh" },
+    { id: 31, name: "Yetkazib berish", orders: [], waiter: "", status: "Bo'sh" },
   ]);
   const [selectedTableId, setSelectedTableId] = useState(null);
-  const [user, setUser] = useState(null); // Assume user.role = "admin" for boss
+  const [user, setUser] = useState(null);
   const [ordersHistory, setOrdersHistory] = useState([]);
   const [menu, setMenu] = useState([
     { id: 1, name: "Osh", price: 25000, category: "Asosiy taom", isBestSeller: false },
@@ -56,9 +56,8 @@ export const AppProvider = ({ children }) => {
     { id: 12, name: "Olivye", price: 10000, category: "Salat", isBestSeller: true },
     { id: 13, name: "Sharbat", price: 4000, category: "Ichimlik", isBestSeller: false },
     { id: 14, name: "Qatiqli salat", price: 7000, category: "Salat", isBestSeller: false },
-    { id: 15, name: "Choy", price: 2000, category: "Ichimlik", isBestSeller: true }
+    { id: 15, name: "Choy", price: 2000, category: "Ichimlik", isBestSeller: true },
   ]);
-  
   const [dailyReport, setDailyReport] = useState({
     ordersCount: 0,
     totalRevenue: 0,
@@ -68,9 +67,9 @@ export const AppProvider = ({ children }) => {
   const [lastMessageDate, setLastMessageDate] = useState(null);
 
   const TELEGRAM_BOT_TOKEN = "8154384849:AAHMmi4MZIJ0fiXRF2Yrfw04G3EA4Jo07o0";
-  const CHAT_ID = "7412640853";
-
-  // Load data from localStorage
+  const CHAT_ID = "7412640853"; // Hisobot uchun chat ID
+  const KITCHEN_CHAT_ID = "7194866883:AAHrf14FYoohEUVFHGcRegBe4dDL_4kJx-I "; 
+  // LocalStorage'dan ma'lumotlarni yuklash
   useEffect(() => {
     const savedTables = localStorage.getItem("tables");
     const savedOrdersHistory = localStorage.getItem("ordersHistory");
@@ -87,7 +86,7 @@ export const AppProvider = ({ children }) => {
     if (savedLastMessageDate) setLastMessageDate(JSON.parse(savedLastMessageDate));
   }, []);
 
-  // Save data to localStorage
+  // Ma'lumotlarni LocalStorage'ga saqlash
   useEffect(() => {
     localStorage.setItem("tables", JSON.stringify(tables));
     localStorage.setItem("ordersHistory", JSON.stringify(ordersHistory));
@@ -121,7 +120,7 @@ export const AppProvider = ({ children }) => {
     setTables(tables.map((table) => (table.id === id ? { ...table, waiter } : table)));
   };
 
-  const addToOrder = (item) => {
+  const addToOrder = async (item) => {
     if (!selectedTableId) {
       alert("Iltimos, avval stol tanlang!");
       return;
@@ -130,23 +129,29 @@ export const AppProvider = ({ children }) => {
     const newTables = tables.map((table) => {
       if (table.id === selectedTableId) {
         const existingItemIndex = table.orders.findIndex((order) => order.id === item.id);
+        let newOrders;
         if (existingItemIndex >= 0) {
-          const newOrders = [...table.orders];
+          newOrders = [...table.orders];
           newOrders[existingItemIndex].quantity += 1;
-          return { ...table, orders: newOrders, status: "Zakaz qo'shildi" };
+        } else {
+          newOrders = [...table.orders, { ...item, quantity: 1 }];
         }
         return {
           ...table,
-          orders: [...table.orders, { ...item, quantity: 1 }],
+          orders: newOrders,
           status: "Zakaz qo'shildi",
         };
       }
       return table;
     });
     setTables(newTables);
+
+    // Oshxonaga yangi buyurtma xabari
+    const table = newTables.find((t) => t.id === selectedTableId);
+    await sendKitchenNotification(table, "yangi");
   };
 
-  const updateOrder = (tableId, index, quantity) => {
+  const updateOrder = async (tableId, index, quantity) => {
     const newTables = tables.map((table) => {
       if (table.id === tableId) {
         const newOrders = [...table.orders];
@@ -156,9 +161,13 @@ export const AppProvider = ({ children }) => {
       return table;
     });
     setTables(newTables);
+
+    // Oshxonaga o'zgartirilgan buyurtma xabari
+    const table = newTables.find((t) => t.id === tableId);
+    await sendKitchenNotification(table, "o'zgartirildi", { index, quantity });
   };
 
-  const removeFromOrder = (tableId, index) => {
+  const removeFromOrder = async (tableId, index) => {
     const newTables = tables.map((table) => {
       if (table.id === tableId) {
         const newOrders = table.orders.filter((_, i) => i !== index);
@@ -171,14 +180,18 @@ export const AppProvider = ({ children }) => {
       return table;
     });
     setTables(newTables);
+
+    // Oshxonaga o'chirilgan buyurtma xabari
+    const table = newTables.find((t) => t.id === tableId);
+    await sendKitchenNotification(table, "o'chirildi", { index });
   };
 
-  const sendTelegramMessage = async (text, options = {}) => {
+  const sendTelegramMessage = async (text, chatId = CHAT_ID, options = {}) => {
     try {
       const response = await axios.post(
         `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
         {
-          chat_id: CHAT_ID,
+          chat_id: chatId,
           text,
           parse_mode: "HTML",
           ...options,
@@ -204,6 +217,59 @@ export const AppProvider = ({ children }) => {
     } catch (error) {
       console.error("Telegram xabarni tahrirlashda xato:", error);
     }
+  };
+
+  const sendKitchenNotification = async (table, type, extra = {}) => {
+    if (!table) return;
+
+    let message = "";
+    const itemsList = table.orders.length
+      ? table.orders.map((item) => `- ${item.name} x ${item.quantity}`).join("\n")
+      : "Buyurtmalar yo'q";
+
+    switch (type) {
+      case "yangi":
+        message = `
+<b>🍳 Yangi Buyurtma - ${table.name} (ID: ${table.id})</b>
+📝 Ro'yxat:
+${itemsList}
+👨‍🍳 Ofitsiant: ${table.waiter || "Belgilanmagan"}
+🕒 Vaqt: ${new Date().toLocaleString("uz-UZ")}
+        `;
+        break;
+      case "o'zgartirildi":
+        message = `
+<b>🔄 Buyurtma O'zgartirildi - ${table.name} (ID: ${table.id})</b>
+📝 Yangilangan ro'yxat:
+${itemsList}
+🔢 O'zgarish: "${table.orders[extra.index]?.name || "Noma'lum"}" ${extra.quantity} taga o'zgardi
+👨‍🍳 Ofitsiant: ${table.waiter || "Belgilanmagan"}
+🕒 Vaqt: ${new Date().toLocaleString("uz-UZ")}
+        `;
+        break;
+      case "o'chirildi":
+        message = `
+<b>🗑️ Buyurtma O'chirildi - ${table.name} (ID: ${table.id})</b>
+📝 Qolgan ro'yxat:
+${itemsList}
+👨‍🍳 Ofitsiant: ${table.waiter || "Belgilanmagan"}
+🕒 Vaqt: ${new Date().toLocaleString("uz-UZ")}
+        `;
+        break;
+      case "yakunlandi":
+        message = `
+<b>✅ Buyurtma Yakunlandi - ${table.name} (ID: ${table.id})</b>
+💵 Jami: ${extra.total.toLocaleString()} so'm
+📌 To'lov holati: ${extra.paymentConfirmed ? "To'langan" : "To'lov kutilmoqda"}
+👨‍🍳 Ofitsiant: ${table.waiter || "Belgilanmagan"}
+🕒 Vaqt: ${new Date().toLocaleString("uz-UZ")}
+        `;
+        break;
+      default:
+        return;
+    }
+
+    await sendTelegramMessage(message, KITCHEN_CHAT_ID);
   };
 
   const getTopSellingItems = (orders) => {
@@ -274,13 +340,13 @@ export const AppProvider = ({ children }) => {
     const newOrdersHistory = [...ordersHistory, newOrder];
     setOrdersHistory(newOrdersHistory);
 
-    // Update tables
+    // Stol holatini yangilash
     const newTables = tables.map((t) => {
       if (t.id === tableId) {
         return {
           ...t,
           orders: [],
-          status: paymentConfirmed ? "Yopish" : "To'lov kutilmoqda",
+          status: paymentConfirmed ? "Bo'sh" : "To'lov kutilmoqda",
         };
       }
       return t;
@@ -288,13 +354,15 @@ export const AppProvider = ({ children }) => {
     setTables(newTables);
     setSelectedTableId(null);
 
-    // Get today's date
+    // Oshxonaga yakuniy xabar
+    await sendKitchenNotification(table, "yakunlandi", { total, paymentConfirmed });
+
+    // Kunlik hisobotni yangilash
     const today = new Date().toLocaleDateString("uz-UZ");
     const todayOrders = newOrdersHistory.filter(
       (order) => new Date(order.date).toLocaleDateString("uz-UZ") === today
     );
 
-    // Update daily report
     const ordersCount = todayOrders.length;
     const totalRevenue = todayOrders.reduce((sum, order) => sum + order.total, 0);
     const topSellers = getTopSellingItems(todayOrders);
@@ -306,7 +374,7 @@ export const AppProvider = ({ children }) => {
 
     setDailyReport({ ordersCount, totalRevenue, bestSellers });
 
-    // Prepare daily report message
+    // Telegram hisobot xabari
     const orderDetailsText = todayOrders
       .map((order, index) => {
         const itemsList = order.items
@@ -333,7 +401,6 @@ export const AppProvider = ({ children }) => {
       `<b>🏆 Eng ko'p sotilganlar:</b>\n${bestSellersText || "Hozircha ma'lumot yo'q"}\n\n` +
       `<b>📋 Buyurtma tafsilotlari:</b>\n${orderDetailsText || "Hozircha buyurtma yo'q"}`;
 
-    // Check if the last message was sent today
     const isSameDay = lastMessageDate === today;
 
     if (!lastMessageId || !isSameDay) {
@@ -345,7 +412,7 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  const confirmPayment = (tableId) => {
+  const confirmPayment = async (tableId) => {
     const table = tables.find((t) => t.id === tableId);
     if (!table) return;
 
@@ -360,9 +427,15 @@ export const AppProvider = ({ children }) => {
       );
       setTables(
         tables.map((t) =>
-          t.id === tableId ? { ...t, status: "Yopish" } : t
+          t.id === tableId ? { ...t, status: "Bo'sh" } : t
         )
       );
+
+      // Oshxonaga to'lov tasdiqlangan xabar
+      await sendKitchenNotification(table, "yakunlandi", {
+        total: order.total,
+        paymentConfirmed: true,
+      });
     }
   };
 
@@ -445,5 +518,3 @@ export const AppProvider = ({ children }) => {
     </AppContext.Provider>
   );
 };
-
-

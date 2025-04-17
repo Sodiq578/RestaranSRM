@@ -1,8 +1,10 @@
 import React, { useContext, useState } from "react";
 import MenuItem from "../components/MenuItem";
 import OrderForm from "../components/OrderForm";
-import PaymentModal from "../components/PaymentModal";
 import { AppContext } from "../context/AppContext";
+import { FaTable, FaBook, FaStar, FaList, FaShoppingCart, FaUserTie, FaBoxOpen, FaTh, FaTimes, FaCreditCard } from "react-icons/fa";
+import { MdAccessTime, MdPerson } from "react-icons/md";
+import "./Home.css";
 
 function Home() {
   const { tables, selectTable, selectedTableId, menu } = useContext(AppContext);
@@ -16,157 +18,202 @@ function Home() {
     : menu.filter((item) => item.category === selectedCategory);
 
   return (
-    <div style={{ padding: "15px", maxWidth: "1400px", margin: "0 auto" }}>
-      <h1 style={{
-        textAlign: "center",
-        marginBottom: "30px",
-        fontSize: "clamp(24px, 4vw, 28px)",
-      }}>
-        Restoran Kassa
-      </h1>
-      
-      {/* Tables Section */}
-      <div style={{ marginBottom: "20px" }}>
-        <h2 style={{ marginBottom: "15px" }}>Stollar</h2>
-        <div style={{ 
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))",
-          gap: "10px",
-        }}>
+    <div className="home-container">
+      <header className="app-header">
+        <h1>Restoran POS Tizimi</h1>
+        <div className="header-info">
+          <span className="time-display">
+            <MdAccessTime className="header-icon" />
+            {new Date().toLocaleTimeString()}
+          </span>
+          <span className="user-info">
+            <MdPerson className="header-icon" />
+            Operator: Admin
+          </span>
+        </div>
+      </header>
+
+      {/* Stollar bo‘limi */}
+      <section className="tables-section">
+        <h2>
+          <FaTable className="section-icon" /> Stollar
+          <span className="section-badge">{tables.length} jami</span>
+        </h2>
+        <div className="tables-grid">
           {tables.map((table) => (
             <div
               key={table.id}
               onClick={() => selectTable(table.id)}
-              style={{
-                padding: "15px",
-                background: table.orders.length > 0 ? "#ff9999" : "#99ccff",
-                color: "#fff",
-                borderRadius: "8px",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                cursor: "pointer",
-                textAlign: "center",
-                transition: "all 0.2s",
-                border: selectedTableId === table.id ? "2px solid #007bff" : "none",
-              }}
+              className={`table-card ${selectedTableId === table.id ? "active" : ""} ${
+                table.orders.length > 0 ? "occupied" : "available"
+              }`}
             >
-              {table.name}
+              <div className="table-number">{table.name}</div>
               {table.orders.length > 0 && (
-                <span style={{ marginLeft: "5px", fontSize: "12px" }}>
-                  ({table.orders.length})
+                <span className="order-count">
+                  {table.orders.length} {table.orders.length === 1 ? "buyurtma" : "buyurtmalar"}
                 </span>
               )}
               {table.waiter && (
-                <div style={{ fontSize: "12px", marginTop: "5px" }}>
-                  Ofitsiant: {table.waiter}
+                <div className="waiter-info">
+                  <FaUserTie className="waiter-icon" /> {table.waiter}
+                </div>
+              )}
+              {table.orders.length > 0 && (
+                <div className="table-total">
+                  ${table.orders.reduce((sum, order) => sum + order.price * order.quantity, 0).toFixed(2)}
                 </div>
               )}
             </div>
           ))}
         </div>
-      </div>
-      
-      {/* Main Content */}
-      <div style={{ 
-        display: "flex", 
-        flexDirection: "column", 
-        gap: "20px",
-        "@media (min-width: 768px)": {
-          flexDirection: "row"
-        }
-      }}>
-        {/* Menu Section */}
-        <div style={{ 
-          width: "100%",
-          "@media (min-width: 768px)": {
-            width: "50%"
-          }
-        }}>
-          <h2 style={{ marginBottom: "15px" }}>Menyu</h2>
-          <div style={{ marginBottom: "15px" }}>
-            <label>Kategoriya: </label>
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              style={{ 
-                padding: "8px", 
-                marginLeft: "10px", 
-                borderRadius: "5px",
-                width: "60%",
-                "@media (min-width: 480px)": {
-                  width: "auto"
-                }
-              }}
-            >
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat === "all" ? "Hammasi" : cat}
-                </option>
+      </section>
+
+      {/* Asosiy kontent */}
+      <main className="main-content">
+        {/* Menyu bo‘limi */}
+        <section className="menu-section">
+  <div className="section-header">
+    <h2>
+      <FaBook className="section-icon" /> Menyu
+      <span className="section-badge">{filteredMenu.length} ta element</span>
+    </h2>
+    <div className="category-filter">
+      <select
+        value={selectedCategory}
+        onChange={(e) => setSelectedCategory(e.target.value)}
+        className="category-select"
+      >
+        {categories.map((cat) => (
+          <option key={cat} value={cat}>
+            {cat === "all" ? "Barcha kategoriyalar" : cat.charAt(0).toUpperCase() + cat.slice(1)}
+          </option>
+        ))}
+      </select>
+    </div>
+  </div>
+
+  {filteredMenu.length === 0 ? (
+    <div className="empty-state">
+      <FaBoxOpen className="empty-icon" />
+      <p>Menyu elementlari topilmadi</p>
+    </div>
+  ) : (
+    <>
+      {filteredMenu.some((item) => item.isBestSeller) && (
+        <div className="menu-subsection">
+          <h3>
+            <FaStar className="subsection-icon" /> Mashhur taomlar
+            <span className="subsection-badge">Eng ko‘p sotilganlar</span>
+          </h3>
+          <div className="menu-grid highlight">
+            {filteredMenu
+              .filter((item) => item.isBestSeller)
+              .map((item) => (
+                <MenuItem key={item.id} item={item} />
               ))}
-            </select>
           </div>
-          {filteredMenu.length === 0 ? (
-            <p style={{ textAlign: "center", color: "#777" }}>Menyu bo'sh</p>
-          ) : (
-            <>
-              <h3 style={{ marginBottom: "10px" }}>Eng ko'p sotilganlar</h3>
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
-                gap: "15px",
-                marginBottom: "20px"
-              }}>
-                {filteredMenu
-                  .filter((item) => item.isBestSeller)
-                  .map((item) => (
-                    <MenuItem key={item.id} item={item} />
-                  ))}
-              </div>
-              <h3 style={{ marginBottom: "10px" }}>Barcha taomlar</h3>
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
-                gap: "15px"
-              }}>
-                {filteredMenu.map((item) => (
-                  <MenuItem key={item.id} item={item} />
-                ))}
-              </div>
-            </>
-          )}
         </div>
-        
-        {/* Orders Section */}
-        <div style={{ 
-          width: "100%",
-          "@media (min-width: 768px)": {
-            width: "50%"
-          }
-        }}>
+      )}
+
+      <div className="menu-subsection">
+        <h3>
+          <FaList className="subsection-icon" /> Barcha elementlar
+          <span className="subsection-badge">{filteredMenu.length} ta mavjud</span>
+        </h3>
+        <div className="menu-grid">
+          {filteredMenu.map((item) => (
+            <MenuItem key={item.id} item={item} />
+          ))}
+        </div>
+      </div>
+    </>
+  )}
+</section>
+
+        {/* Buyurtmalar bo‘limi */}
+        <section className="orders-section">
           {selectedTable ? (
             <>
-              <h2 style={{ marginBottom: "15px" }}>{selectedTable.name} buyurtmalari</h2>
-              <OrderForm
-                tableId={selectedTableId}
-                openPayment={() => setShowPayment(true)}
-              />
+              <div className="section-header">
+                <h2>
+                  
+                  <FaShoppingCart className="section-icon" /> {selectedTable.name} Buyurtmalari
+                  <span className="section-badge">{selectedTable.orders.length} ta element</span>
+                </h2>
+                {selectedTable.orders.length > 0 && (
+                  <button className="payment-button" onClick={() => setShowPayment(true)}>
+                    <FaCreditCard className="button-icon" /> To‘lovni amalga oshirish
+                  </button>
+                )}
+              </div>
+              <OrderForm tableId={selectedTableId} openPayment={() => setShowPayment(true)} />
             </>
           ) : (
-            <p style={{ textAlign: "center", color: "#777" }}>
-              Iltimos, stol tanlang
-            </p>
+            <div className="empty-state">
+              <FaTh className="empty-icon" />
+              <p>Iltimos, stolni tanlang</p>
+              <small>Yuqoridagi ro‘yxatdan istalgan stolni bosing</small>
+            </div>
           )}
-        </div>
-      </div>
-      
-      {/* Payment Modal */}
+        </section>
+      </main>
+
+      {/* To‘lov modal oynasi */}
       {showPayment && selectedTableId && (
-        <PaymentModal
-          tableId={selectedTableId}
-          onClose={() => setShowPayment(false)}
-        />
+        <PaymentModal tableId={selectedTableId} onClose={() => setShowPayment(false)} />
       )}
     </div>
   );
 }
 
+// To‘lov modal komponenti (Chek ko‘rinishi bilan)
+function PaymentModal({ tableId, onClose }) {
+  const { tables } = useContext(AppContext);
+  const selectedTable = tables.find((table) => table.id === tableId);
+  const total = selectedTable.orders.reduce((sum, order) => sum + order.price * order.quantity, 0).toFixed(2);
+
+  return (
+    <div className="payment-modal">
+      <div className="payment-modal-content">
+        <button className="modal-close" onClick={onClose}>
+          <FaTimes />
+        </button>
+        <h2 className="modal-title">
+          <FaCreditCard className="modal-icon" /> {selectedTable.name} uchun chek
+        </h2>
+        <div className="receipt">
+          <div className="receipt-header">
+            <h3>Buyurtma detallari</h3>
+            <span>Stol: {selectedTable.name}</span>
+            <span>Vaqt: {new Date().toLocaleTimeString()}</span>
+          </div>
+          <div className="receipt-items">
+            {selectedTable.orders.map((order, index) => (
+              <div key={index} className="receipt-item">
+                <span className="item-name">{order.name}</span>
+                <span className="item-quantity">x{order.quantity}</span>
+                <span className="item-price">${(order.price * order.quantity).toFixed(2)}</span>
+              </div>
+            ))}
+          </div>
+          <div className="receipt-footer">
+            <div className="receipt-total">
+              <span>Jami:</span>
+              <span>${total}</span>
+            </div>
+          </div>
+        </div>
+        <div className="modal-actions">
+          <button className="confirm-button">To‘lovni tasdiqlash</button>
+          <button className="cancel-button" onClick={onClose}>
+            Bekor qilish
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default Home;
+
