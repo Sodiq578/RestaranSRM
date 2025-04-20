@@ -4,6 +4,16 @@ import jsPDF from "jspdf";
 
 export const AppContext = createContext();
 
+// Narxlarni so‘mda formatlash
+const formatPrice = (price) => {
+  return new Intl.NumberFormat("uz-UZ", {
+    style: "currency",
+    currency: "UZS",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(price);
+};
+
 export const AppProvider = ({ children }) => {
   const [tables, setTables] = useState([
     { id: 1, name: "Stol 1", orders: [], waiter: "", status: "Bo'sh" },
@@ -65,10 +75,15 @@ export const AppProvider = ({ children }) => {
   });
   const [lastMessageId, setLastMessageId] = useState(null);
   const [lastMessageDate, setLastMessageDate] = useState(null);
+  const [sentOrders, setSentOrders] = useState({}); // Yuborilgan buyurtmalarni saqlash
 
-  const TELEGRAM_BOT_TOKEN = "8154384849:AAHMmi4MZIJ0fiXRF2Yrfw04G3EA4Jo07o0";
-  const CHAT_ID = "7412640853"; // Hisobot uchun chat ID
-  const KITCHEN_CHAT_ID = "7194866883:AAHrf14FYoohEUVFHGcRegBe4dDL_4kJx-I "; 
+  // Telegram bot sozlamalari
+  const TELEGRAM_BOT_TOKEN = "7885205848:AAEcgs2vXjZqyV40f6Jvl8Rj1OMq0r7QGkA";
+  const MAIN_REPORTING_CHAT_ID = "-4646692596"; // Umumiy hisobot (Bar Zakaz Grupa)
+  const BAR_CHAT_ID = "-4646692596"; // Bar Zakaz Grupa
+  const SALATCHILAR_CHAT_ID = "-4753754534"; // Salatchilar Zakaz Grupa
+  const OSHXONA_CHAT_ID = "-4686557731"; // Oshxona Zakaz Grupa
+
   // LocalStorage'dan ma'lumotlarni yuklash
   useEffect(() => {
     const savedTables = localStorage.getItem("tables");
@@ -77,6 +92,7 @@ export const AppProvider = ({ children }) => {
     const savedDailyReport = localStorage.getItem("dailyReport");
     const savedLastMessageId = localStorage.getItem("lastMessageId");
     const savedLastMessageDate = localStorage.getItem("lastMessageDate");
+    const savedSentOrders = localStorage.getItem("sentOrders");
 
     if (savedTables) setTables(JSON.parse(savedTables));
     if (savedOrdersHistory) setOrdersHistory(JSON.parse(savedOrdersHistory));
@@ -84,6 +100,7 @@ export const AppProvider = ({ children }) => {
     if (savedDailyReport) setDailyReport(JSON.parse(savedDailyReport));
     if (savedLastMessageId) setLastMessageId(JSON.parse(savedLastMessageId));
     if (savedLastMessageDate) setLastMessageDate(JSON.parse(savedLastMessageDate));
+    if (savedSentOrders) setSentOrders(JSON.parse(savedSentOrders));
   }, []);
 
   // Ma'lumotlarni LocalStorage'ga saqlash
@@ -94,30 +111,11 @@ export const AppProvider = ({ children }) => {
     localStorage.setItem("dailyReport", JSON.stringify(dailyReport));
     localStorage.setItem("lastMessageId", JSON.stringify(lastMessageId));
     localStorage.setItem("lastMessageDate", JSON.stringify(lastMessageDate));
-  }, [tables, ordersHistory, menu, dailyReport, lastMessageId, lastMessageDate]);
+    localStorage.setItem("sentOrders", JSON.stringify(sentOrders));
+  }, [tables, ordersHistory, menu, dailyReport, lastMessageId, lastMessageDate, sentOrders]);
 
   const selectTable = (tableId) => {
     setSelectedTableId(tableId);
-  };
-
-  const addTable = (name) => {
-    const newTable = {
-      id: Math.max(0, ...tables.map((t) => t.id)) + 1,
-      name,
-      orders: [],
-      waiter: "",
-      status: "Bo'sh",
-    };
-    setTables([...tables, newTable]);
-  };
-
-  const deleteTable = (id) => {
-    setTables(tables.filter((table) => table.id !== id));
-    if (selectedTableId === id) setSelectedTableId(null);
-  };
-
-  const updateTableWaiter = (id, waiter) => {
-    setTables(tables.map((table) => (table.id === id ? { ...table, waiter } : table)));
   };
 
   const addToOrder = async (item) => {
@@ -126,29 +124,66 @@ export const AppProvider = ({ children }) => {
       return;
     }
 
-    const newTables = tables.map((table) => {
-      if (table.id === selectedTableId) {
-        const existingItemIndex = table.orders.findIndex((order) => order.id === item.id);
+    const table = tables.find((t) => t.id === selectedTableId);
+    const newTables = tables.map((t) => {
+      if (t.id === selectedTableId) {
+        const existingItemIndex = t.orders.findIndex((order) => order.id === item.id);
         let newOrders;
         if (existingItemIndex >= 0) {
-          newOrders = [...table.orders];
+          newOrders = [...t.orders];
           newOrders[existingItemIndex].quantity += 1;
         } else {
-          newOrders = [...table.orders, { ...item, quantity: 1 }];
+          const menuItem = menu.find((m) => m.id === item.id);
+          newOrders = [...t.orders, { ...item, quantity: 1, category: menuItem?.category || "Other" }];
         }
         return {
-          ...table,
+          ...t,
           orders: newOrders,
-          status: "Zakaz qo'shildi",
+          status: newOrders.length > 0 ? "Zakaz qo'shildi" : "Bo'sh",
         };
       }
-      return table;
+      return t;
     });
-    setTables(newTables);
 
-    // Oshxonaga yangi buyurtma xabari
-    const table = newTables.find((t) => t.id === selectedTableId);
-    await sendKitchenNotification(table, "yangi");
+    try {
+      // Yangi taomni Telegram guruhiga yuborish
+      const menuItem = menu.find((m) => m.id === item.id);
+      const category = menuItem?.category || "Other";
+      let chatId;
+      if (category === "Ichimlik") chatId = BAR_CHAT_ID;
+      else if (category === "Salat") chatId = SALATCHILAR_CHAT_ID;
+      else chatId = OSHXONA_CHAT_ID;
+
+      const addMessage = `
+<b>➕ Yangi taom qo'shildi - ${table.name} (ID: ${table.id})</b>
+📝 Taom: ${item.name} x 1 (${formatPrice(item.price)})
+👨‍🍳 Ofitsiant: ${table.waiter || "Belgilanmagan"}
+🕒 Vaqt: ${new Date().toLocaleString("uz-UZ")}
+      `;
+      await sendTelegramMessage(addMessage, chatId);
+
+      // Umumiy hisobot guruhiga yangilangan buyurtma yuborish
+      const total = newTables.find((t) => t.id === selectedTableId).orders.reduce(
+        (sum, order) => sum + order.price * order.quantity,
+        0
+      );
+      const updateMessage = `
+<b>📋 Buyurtma yangilandi - ${table.name} (ID: ${table.id})</b>
+➕ Qo'shildi: ${item.name} x 1
+📝 Buyurtmalar:
+${newTables
+  .find((t) => t.id === selectedTableId)
+  .orders.map((order) => `- ${order.name} x ${order.quantity} (${formatPrice(order.price * order.quantity)})`).join("\n")}
+💵 Jami: ${formatPrice(total)}
+👨‍🍳 Ofitsiant: ${table.waiter || "Belgilanmagan"}
+🕒 Vaqt: ${new Date().toLocaleString("uz-UZ")}
+      `;
+      await sendTelegramMessage(updateMessage, MAIN_REPORTING_CHAT_ID);
+
+      setTables(newTables);
+    } catch (error) {
+      alert("Taomni qo'shishda xato: " + error.message);
+    }
   };
 
   const updateOrder = async (tableId, index, quantity) => {
@@ -156,21 +191,6 @@ export const AppProvider = ({ children }) => {
       if (table.id === tableId) {
         const newOrders = [...table.orders];
         newOrders[index].quantity = quantity;
-        return { ...table, orders: newOrders };
-      }
-      return table;
-    });
-    setTables(newTables);
-
-    // Oshxonaga o'zgartirilgan buyurtma xabari
-    const table = newTables.find((t) => t.id === tableId);
-    await sendKitchenNotification(table, "o'zgartirildi", { index, quantity });
-  };
-
-  const removeFromOrder = async (tableId, index) => {
-    const newTables = tables.map((table) => {
-      if (table.id === tableId) {
-        const newOrders = table.orders.filter((_, i) => i !== index);
         return {
           ...table,
           orders: newOrders,
@@ -180,142 +200,205 @@ export const AppProvider = ({ children }) => {
       return table;
     });
     setTables(newTables);
-
-    // Oshxonaga o'chirilgan buyurtma xabari
-    const table = newTables.find((t) => t.id === tableId);
-    await sendKitchenNotification(table, "o'chirildi", { index });
   };
 
-  const sendTelegramMessage = async (text, chatId = CHAT_ID, options = {}) => {
+  const removeFromOrder = async (tableId, index) => {
+    const table = tables.find((t) => t.id === tableId);
+    if (!table || index >= table.orders.length) {
+      alert("Buyurtma topilmadi!");
+      return false;
+    }
+
+    const removedItem = table.orders[index];
+    const newTables = tables.map((t) => {
+      if (t.id === tableId) {
+        const newOrders = t.orders.filter((_, i) => i !== index);
+        return {
+          ...t,
+          orders: newOrders,
+          status: newOrders.length > 0 ? "Zakaz qo'shildi" : "Bo'sh",
+        };
+      }
+      return t;
+    });
+
+    try {
+      // Telegram xabarini mos guruhga yuborish
+      let chatId;
+      if (removedItem.category === "Ichimlik") {
+        chatId = BAR_CHAT_ID;
+      } else if (removedItem.category === "Salat") {
+        chatId = SALATCHILAR_CHAT_ID;
+      } else {
+        chatId = OSHXONA_CHAT_ID;
+      }
+
+      const removeMessage = `
+<b>🗑️ Taom bekor qilindi - ${table.name} (ID: ${table.id})</b>
+📝 Taom: ${removedItem.name} x ${removedItem.quantity} (${formatPrice(removedItem.price * removedItem.quantity)})
+👨‍🍳 Ofitsiant: ${table.waiter || "Belgilanmagan"}
+🕒 Vaqt: ${new Date().toLocaleString("uz-UZ")}
+      `;
+      await sendTelegramMessage(removeMessage, chatId);
+
+      // Umumiy hisobot guruhiga xabar yuborish
+      const total = newTables.find((t) => t.id === tableId).orders.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
+      );
+      const updateMessage = `
+<b>📋 Buyurtma yangilandi - ${table.name} (ID: ${table.id})</b>
+🗑️ Bekor qilindi: ${removedItem.name} x ${removedItem.quantity}
+📝 Qolgan buyurtmalar:
+${newTables
+  .find((t) => t.id === tableId)
+  .orders.map((item) => `- ${item.name} x ${item.quantity} (${formatPrice(item.price * item.quantity)})`).join("\n") || "Buyurtmalar yo'q"}
+💵 Jami: ${formatPrice(total)}
+👨‍🍳 Ofitsiant: ${table.waiter || "Belgilanmagan"}
+🕒 Vaqt: ${new Date().toLocaleString("uz-UZ")}
+      `;
+      await sendTelegramMessage(updateMessage, MAIN_REPORTING_CHAT_ID);
+
+      // Yuborilgan buyurtmalardan olib tashlash
+      setSentOrders((prev) => {
+        const updated = { ...prev };
+        if (updated[tableId]) {
+          updated[tableId] = updated[tableId].filter((order) => order.id !== removedItem.id);
+          if (updated[tableId].length === 0) delete updated[tableId];
+        }
+        return updated;
+      });
+
+      setTables(newTables);
+      return true;
+    } catch (error) {
+      alert("Taomni bekor qilishda xato: " + error.message);
+      return false;
+    }
+  };
+
+  const sendTelegramMessage = async (text, chatId, options = {}) => {
+    if (!text || !chatId) {
+      console.error("Xabar matni yoki chat ID bo'sh:", { text, chatId });
+      throw new Error("Xabar matni yoki chat ID bo'sh");
+    }
     try {
       const response = await axios.post(
         `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
         {
           chat_id: chatId,
-          text,
+          text: text.slice(0, 4096), // Telegram xabar uzunligi cheklovi
           parse_mode: "HTML",
           ...options,
         }
       );
       return response.data.result.message_id;
     } catch (error) {
-      console.error("Telegram xabarni yuborishda xato:", error);
+      console.error("Telegram xabarni yuborishda xato:", error.response?.data || error.message);
+      throw new Error("Telegram xabarni yuborib bo'lmadi: " + (error.response?.data?.description || error.message));
     }
   };
 
-  const editTelegramMessage = async (messageId, text) => {
+  const sendOrdersToPreparation = async (tableId) => {
+    const table = tables.find((t) => t.id === tableId);
+    if (!table || table.orders.length === 0) {
+      alert("Buyurtma bo'sh!");
+      return false;
+    }
+
+    // Yuborilmagan (yangi) buyurtmalarni aniqlash
+    const sentForTable = sentOrders[tableId] || [];
+    const newOrders = table.orders.filter(
+      (order) => !sentForTable.some((sent) => sent.id === order.id && sent.quantity === order.quantity)
+    );
+
+    if (newOrders.length === 0 && table.status === "Tayyorlashga yuborildi") {
+      alert("Yangi buyurtmalar yo'q!");
+      return false;
+    }
+
+    // Kategoriyalar bo'yicha buyurtmalarni ajratish
+    const barItems = newOrders.filter((item) => item.category === "Ichimlik");
+    const saladItems = newOrders.filter((item) => item.category === "Salat");
+    const kitchenItems = newOrders.filter(
+      (item) => item.category === "Asosiy taom" || item.category === "Desert" || item.category === "Other"
+    );
+
+    // Buyurtmalarni formatlash
+    const formatItemsList = (items) =>
+      items.length
+        ? items
+            .map((item) => `- ${item.name} x ${item.quantity} (${formatPrice(item.price * item.quantity)})`)
+            .join("\n")
+        : "Buyurtmalar yo'q";
+
     try {
-      await axios.post(
-        `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageText`,
-        {
-          chat_id: CHAT_ID,
-          message_id: messageId,
-          text,
-          parse_mode: "HTML",
-        }
-      );
-    } catch (error) {
-      console.error("Telegram xabarni tahrirlashda xato:", error);
-    }
-  };
-
-  const sendKitchenNotification = async (table, type, extra = {}) => {
-    if (!table) return;
-
-    let message = "";
-    const itemsList = table.orders.length
-      ? table.orders.map((item) => `- ${item.name} x ${item.quantity}`).join("\n")
-      : "Buyurtmalar yo'q";
-
-    switch (type) {
-      case "yangi":
-        message = `
-<b>🍳 Yangi Buyurtma - ${table.name} (ID: ${table.id})</b>
+      // Bar guruhiga yuborish
+      if (barItems.length > 0) {
+        const barMessage = `
+<b>🍹 Bar uchun yangi buyurtma - ${table.name} (ID: ${table.id})</b>
 📝 Ro'yxat:
-${itemsList}
+${formatItemsList(barItems)}
 👨‍🍳 Ofitsiant: ${table.waiter || "Belgilanmagan"}
 🕒 Vaqt: ${new Date().toLocaleString("uz-UZ")}
         `;
-        break;
-      case "o'zgartirildi":
-        message = `
-<b>🔄 Buyurtma O'zgartirildi - ${table.name} (ID: ${table.id})</b>
-📝 Yangilangan ro'yxat:
-${itemsList}
-🔢 O'zgarish: "${table.orders[extra.index]?.name || "Noma'lum"}" ${extra.quantity} taga o'zgardi
-👨‍🍳 Ofitsiant: ${table.waiter || "Belgilanmagan"}
-🕒 Vaqt: ${new Date().toLocaleString("uz-UZ")}
-        `;
-        break;
-      case "o'chirildi":
-        message = `
-<b>🗑️ Buyurtma O'chirildi - ${table.name} (ID: ${table.id})</b>
-📝 Qolgan ro'yxat:
-${itemsList}
-👨‍🍳 Ofitsiant: ${table.waiter || "Belgilanmagan"}
-🕒 Vaqt: ${new Date().toLocaleString("uz-UZ")}
-        `;
-        break;
-      case "yakunlandi":
-        message = `
-<b>✅ Buyurtma Yakunlandi - ${table.name} (ID: ${table.id})</b>
-💵 Jami: ${extra.total.toLocaleString()} so'm
-📌 To'lov holati: ${extra.paymentConfirmed ? "To'langan" : "To'lov kutilmoqda"}
-👨‍🍳 Ofitsiant: ${table.waiter || "Belgilanmagan"}
-🕒 Vaqt: ${new Date().toLocaleString("uz-UZ")}
-        `;
-        break;
-      default:
-        return;
-    }
+        await sendTelegramMessage(barMessage, BAR_CHAT_ID);
+      }
 
-    await sendTelegramMessage(message, KITCHEN_CHAT_ID);
-  };
+      // Salatchilar guruhiga yuborish
+      if (saladItems.length > 0) {
+        const saladMessage = `
+<b>🥗 Salatchilar uchun yangi buyurtma - ${table.name} (ID: ${table.id})</b>
+📝 Ro'yxat:
+${formatItemsList(saladItems)}
+👨‍🍳 Ofitsiant: ${table.waiter || "Belgilanmagan"}
+🕒 Vaqt: ${new Date().toLocaleString("uz-UZ")}
+        `;
+        await sendTelegramMessage(saladMessage, SALATCHILAR_CHAT_ID);
+      }
 
-  const getTopSellingItems = (orders) => {
-    const itemCounts = {};
-    orders.forEach((order) => {
-      order.items.forEach((item) => {
-        if (!itemCounts[item.id]) {
-          itemCounts[item.id] = {
-            count: 0,
-            totalQuantity: 0,
-            name: item.name,
-            price: item.price,
-          };
-        }
-        itemCounts[item.id].count += 1;
-        itemCounts[item.id].totalQuantity += item.quantity;
-      });
-    });
-    return Object.values(itemCounts)
-      .sort((a, b) => b.totalQuantity - a.totalQuantity)
-      .slice(0, 3);
-  };
+      // Oshxona guruhiga yuborish
+      if (kitchenItems.length > 0) {
+        const kitchenMessage = `
+<b>🍲 Oshxona uchun yangi buyurtma - ${table.name} (ID: ${table.id})</b>
+📝 Ro'yxat:
+${formatItemsList(kitchenItems)}
+👨‍🍳 Ofitsiant: ${table.waiter || "Belgilanmagan"}
+🕒 Vaqt: ${new Date().toLocaleString("uz-UZ")}
+        `;
+        await sendTelegramMessage(kitchenMessage, OSHXONA_CHAT_ID);
+      }
 
-  const generateReceiptPDF = (order) => {
-    const doc = new jsPDF();
-    doc.setFontSize(18);
-    doc.text("Sodiqjon Restorani", 105, 20, { align: "center" });
-    doc.setFontSize(14);
-    doc.text(`Chek #${order.id}`, 20, 40);
-    doc.text(`Stol: ${order.tableName} (ID: ${order.tableId})`, 20, 50);
-    doc.text(`Ofitsiant: ${order.waiter || "Belgilanmagan"}`, 20, 60);
-    doc.text(`Sana: ${new Date(order.date).toLocaleString("uz-UZ")}`, 20, 70);
-    doc.setFontSize(12);
-    doc.text("Buyurtma:", 20, 90);
-    let y = 100;
-    order.items.forEach((item) => {
-      doc.text(
-        `${item.name} x ${item.quantity} = ${(item.price * item.quantity).toLocaleString()} so'm`,
-        30,
-        y
+      // Umumiy hisobot guruhiga yuborish
+      const total = table.orders.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const fullMessage = `
+<b>📋 Umumiy buyurtma yangilandi - ${table.name} (ID: ${table.id})</b>
+📝 Ro'yxat:
+${formatItemsList(table.orders)}
+💵 Jami: ${formatPrice(total)}
+👨‍🍳 Ofitsiant: ${table.waiter || "Belgilanmagan"}
+🕒 Vaqt: ${new Date().toLocaleString("uz-UZ")}
+📌 Status: Tayyorlashga yuborildi
+      `;
+      await sendTelegramMessage(fullMessage, MAIN_REPORTING_CHAT_ID);
+
+      // Yuborilgan buyurtmalarni yangilash
+      setSentOrders((prev) => ({
+        ...prev,
+        [tableId]: table.orders.map((order) => ({ ...order })),
+      }));
+
+      // Stol holatini yangilash
+      setTables(
+        tables.map((t) =>
+          t.id === tableId ? { ...t, status: "Tayyorlashga yuborildi" } : t
+        )
       );
-      y += 10;
-    });
-    doc.setFontSize(14);
-    doc.text(`Jami: ${order.total.toLocaleString()} so'm`, 20, y + 10);
-    doc.save(`Sodiqjon_Chek_${order.id}.pdf`);
+      return true;
+    } catch (error) {
+      alert("Buyurtmalarni yuborishda xato yuz berdi: " + error.message);
+      return false;
+    }
   };
 
   const completeOrder = async (tableId, paymentConfirmed = false) => {
@@ -354,138 +437,110 @@ ${itemsList}
     setTables(newTables);
     setSelectedTableId(null);
 
-    // Oshxonaga yakuniy xabar
-    await sendKitchenNotification(table, "yakunlandi", { total, paymentConfirmed });
+    // Yakunlash xabarini yuborish
+    try {
+      const completionMessage = `
+<b>✅ Buyurtma Yakunlandi - ${table.name} (ID: ${table.id})</b>
+💵 Jami: ${formatPrice(total)}
+📌 To'lov holati: ${paymentConfirmed ? "To'langan" : "To'lov kutilmoqda"}
+👨‍🍳 Ofitsiant: ${table.waiter || "Belgilanmagan"}
+🕒 Vaqt: ${new Date().toLocaleString("uz-UZ")}
+      `;
+      await sendTelegramMessage(completionMessage, MAIN_REPORTING_CHAT_ID);
 
-    // Kunlik hisobotni yangilash
-    const today = new Date().toLocaleDateString("uz-UZ");
-    const todayOrders = newOrdersHistory.filter(
-      (order) => new Date(order.date).toLocaleDateString("uz-UZ") === today
-    );
-
-    const ordersCount = todayOrders.length;
-    const totalRevenue = todayOrders.reduce((sum, order) => sum + order.total, 0);
-    const topSellers = getTopSellingItems(todayOrders);
-    const bestSellers = topSellers.map((item) => ({
-      name: item.name,
-      count: item.totalQuantity,
-      total: item.totalQuantity * item.price,
-    }));
-
-    setDailyReport({ ordersCount, totalRevenue, bestSellers });
-
-    // Telegram hisobot xabari
-    const orderDetailsText = todayOrders
-      .map((order, index) => {
-        const itemsList = order.items
-          .map((item) => `- ${item.name} x ${item.quantity} = ${(item.price * item.quantity).toLocaleString()} so'm`)
-          .join("\n");
-        return `<b>Buyurtma #${index + 1}</b>\n` +
-               `📅 Sana: ${new Date(order.date).toLocaleString("uz-UZ")}\n` +
-               `🍽️ Stol: ${order.tableName} (ID: ${order.tableId})\n` +
-               `👨‍🍳 Ofitsiant: ${order.waiter || "Belgilanmagan"}\n` +
-               `📝 Buyurtma:\n${itemsList}\n` +
-               `💵 Jami: ${order.total.toLocaleString()} so'm\n` +
-               `📌 Status: ${order.status}\n`;
-      })
-      .join("\n");
-
-    const bestSellersText = bestSellers
-      .map((item, index) => `${index + 1}. ${item.name} - ${item.count} marta (${item.total.toLocaleString()} so'm)`)
-      .join("\n");
-
-    const reportText =
-      `<b>📊 Sodiqjon Restorani - Bugungi hisobot (${today}):</b>\n` +
-      `📌 Buyurtmalar soni: ${ordersCount}\n` +
-      `💰 Umumiy daromad: ${totalRevenue.toLocaleString()} so'm\n\n` +
-      `<b>🏆 Eng ko'p sotilganlar:</b>\n${bestSellersText || "Hozircha ma'lumot yo'q"}\n\n` +
-      `<b>📋 Buyurtma tafsilotlari:</b>\n${orderDetailsText || "Hozircha buyurtma yo'q"}`;
-
-    const isSameDay = lastMessageDate === today;
-
-    if (!lastMessageId || !isSameDay) {
-      const messageId = await sendTelegramMessage(reportText);
-      setLastMessageId(messageId);
-      setLastMessageDate(today);
-    } else {
-      await editTelegramMessage(lastMessageId, reportText);
-    }
-  };
-
-  const confirmPayment = async (tableId) => {
-    const table = tables.find((t) => t.id === tableId);
-    if (!table) return;
-
-    const order = ordersHistory.find(
-      (o) => o.tableId === tableId && o.status === "To'lov kutilmoqda"
-    );
-    if (order) {
-      setOrdersHistory(
-        ordersHistory.map((o) =>
-          o.id === order.id ? { ...o, status: "To'lov qilindi" } : o
-        )
-      );
-      setTables(
-        tables.map((t) =>
-          t.id === tableId ? { ...t, status: "Bo'sh" } : t
-        )
+      // Kunlik hisobotni yangilash
+      const today = new Date().toLocaleDateString("uz-UZ");
+      const todayOrders = newOrdersHistory.filter(
+        (order) => new Date(order.date).toLocaleDateString("uz-UZ") === today
       );
 
-      // Oshxonaga to'lov tasdiqlangan xabar
-      await sendKitchenNotification(table, "yakunlandi", {
-        total: order.total,
-        paymentConfirmed: true,
-      });
-    }
-  };
+      const ordersCount = todayOrders.length;
+      const totalRevenue = todayOrders.reduce((sum, order) => sum + order.total, 0);
+      const topSellers = getTopSellingItems(todayOrders);
+      const bestSellers = topSellers.map((item) => ({
+        name: item.name,
+        count: item.totalQuantity,
+        total: item.totalQuantity * item.price,
+      }));
 
-  const addMenuItem = (item) => {
-    const newId = Math.max(0, ...menu.map((m) => m.id)) + 1;
-    setMenu([...menu, { ...item, id: newId, isBestSeller: item.isBestSeller || false }]);
-  };
+      setDailyReport({ ordersCount, totalRevenue, bestSellers });
 
-  const updateMenuItem = (id, updatedItem) => {
-    setMenu(menu.map((item) => (item.id === id ? { ...item, ...updatedItem } : item)));
-  };
+      // Telegram hisobot xabari
+      const orderDetailsText = todayOrders
+        .map((order, index) => {
+          const itemsList = order.items
+            .map((item) => `- ${item.name} x ${item.quantity} = ${formatPrice(item.price * item.quantity)}`)
+            .join("\n");
+          return `<b>Buyurtma #${index + 1}</b>\n` +
+                 `📅 Sana: ${new Date(order.date).toLocaleString("uz-UZ")}\n` +
+                 `🍽️ Stol: ${order.tableName} (ID: ${order.tableId})\n` +
+                 `👨‍🍳 Ofitsiant: ${order.waiter || "Belgilanmagan"}\n` +
+                 `📝 Buyurtma:\n${itemsList}\n` +
+                 `💵 Jami: ${formatPrice(order.total)}\n` +
+                 `📌 Status: ${order.status}\n`;
+        })
+        .join("\n");
 
-  const deleteMenuItem = (id) => {
-    setMenu(menu.filter((item) => item.id !== id));
-  };
+      const bestSellersText = bestSellers
+        .map((item, index) => `${index + 1}. ${item.name} - ${item.count} marta (${formatPrice(item.total)})`)
+        .join("\n");
 
-  const getOrderStats = () => {
-    const itemStats = {};
-    const tableStats = {};
+      const reportText =
+        `<b>📊 Sodiqjon Restorani - Bugungi hisobot (${today}):</b>\n` +
+        `📌 Buyurtmalar soni: ${ordersCount}\n` +
+        `💰 Umumiy daromad: ${formatPrice(totalRevenue)}\n\n` +
+        `<b>🏆 Eng ko'p sotilganlar:</b>\n${bestSellersText || "Hozircha ma'lumot yo'q"}\n\n` +
+        `<b>📋 Buyurtma tafsilotlari:</b>\n${orderDetailsText || "Hozircha buyurtma yo'q"}`;
 
-    ordersHistory.forEach((order) => {
-      if (!tableStats[order.tableId]) {
-        tableStats[order.tableId] = {
-          name: order.tableName,
-          count: 0,
-          total: 0,
-        };
+      const isSameDay = lastMessageDate === today;
+
+      if (!lastMessageId || !isSameDay) {
+        const messageId = await sendTelegramMessage(reportText, MAIN_REPORTING_CHAT_ID);
+        setLastMessageId(messageId);
+        setLastMessageDate(today);
+      } else {
+        await editTelegramMessage(lastMessageId, reportText);
       }
-      tableStats[order.tableId].count += 1;
-      tableStats[order.tableId].total += order.total;
+    } catch (error) {
+      alert("Hisobot yuborishda xato: " + error.message);
+    }
+  };
 
+  const editTelegramMessage = async (messageId, text) => {
+    try {
+      await axios.post(
+        `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageText`,
+        {
+          chat_id: MAIN_REPORTING_CHAT_ID,
+          message_id: messageId,
+          text: text.slice(0, 4096),
+          parse_mode: "HTML",
+        }
+      );
+    } catch (error) {
+      console.error("Telegram xabarni tahrirlashda xato:", error.response?.data || error.message);
+    }
+  };
+
+  const getTopSellingItems = (orders) => {
+    const itemCounts = {};
+    orders.forEach((order) => {
       order.items.forEach((item) => {
-        if (!itemStats[item.id]) {
-          itemStats[item.id] = {
-            name: item.name,
+        if (!itemCounts[item.id]) {
+          itemCounts[item.id] = {
             count: 0,
             totalQuantity: 0,
-            totalRevenue: 0,
+            name: item.name,
+            price: item.price,
           };
         }
-        itemStats[item.id].count += 1;
-        itemStats[item.id].totalQuantity += item.quantity;
-        itemStats[item.id].totalRevenue += item.price * item.quantity;
+        itemCounts[item.id].count += 1;
+        itemCounts[item.id].totalQuantity += item.quantity;
       });
     });
-
-    return {
-      items: Object.values(itemStats).sort((a, b) => b.count - a.count),
-      tables: Object.values(tableStats).sort((a, b) => b.count - a.count),
-    };
+    return Object.values(itemCounts)
+      .sort((a, b) => b.totalQuantity - a.totalQuantity)
+      .slice(0, 3);
   };
 
   return (
@@ -494,24 +549,16 @@ ${itemsList}
         tables,
         selectedTableId,
         selectTable,
-        addTable,
-        deleteTable,
-        updateTableWaiter,
         addToOrder,
         updateOrder,
         removeFromOrder,
+        sendOrdersToPreparation,
         completeOrder,
-        confirmPayment,
-        generateReceiptPDF,
+        menu,
         user,
         setUser,
         ordersHistory,
-        menu,
-        addMenuItem,
-        updateMenuItem,
-        deleteMenuItem,
         dailyReport,
-        getOrderStats,
       }}
     >
       {children}
