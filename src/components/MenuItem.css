@@ -1,4 +1,4 @@
-/* Menyu bo‘limi (oldingi kodlardan qisqa nusxa, faqat o‘zgargan qismlar) */
+/* Menu section */
 .menu-section {
   flex: 2;
   background: linear-gradient(145deg, #f7fafc, #ffffff);
@@ -117,32 +117,51 @@
   color: #a0aec0;
 }
 
-/* MenuItem kartasi */
+/* Image container to enforce aspect ratio */
+.image-container {
+  width: 100%;
+  aspect-ratio: 4 / 3; /* Consistent aspect ratio for all images */
+  overflow: hidden;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+/* Menu item image */
+.menu-item-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensures images fill the container without distortion */
+  display: block;
+}
+
+/* Menu item card */
 .menu-item {
   background: #ffffff;
   border-radius: 12px;
   padding: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border 0.2s ease;
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
+/* Hover effect */
 .menu-item:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
-.menu-item-image {
-  width: 100%;
-  height: 150px;
-  object-fit: cover;
-  border-radius: 8px;
-  margin-bottom: 12px;
+/* Selected state */
+.menu-item.selected {
+  border: 2px solid #3182ce; /* Blue border for selection */
+  background: #e6f0fa; /* Light blue background */
+  transform: scale(1.02); /* Slight scale-up for emphasis */
+  box-shadow: 0 8px 20px rgba(49, 130, 206, 0.3);
 }
 
-.menu-item-content {
+/* Menu item content */
+.menu-item-details {
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -157,7 +176,7 @@
   align-items: center;
   gap: 6px;
   white-space: nowrap;
-  overflow: hidden;
+ overflow: hidden;
   text-overflow: ellipsis;
   position: relative;
 }
@@ -202,12 +221,85 @@
   font-size: 16px;
   font-weight: 600;
   color: #dd6b20;
-  text-align: right;
 }
 
+.price-quantity {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-.add-button{
-  margin-top: 20px;
+.menu-item-quantity {
+  font-size: 14px;
+  color: #2d3748;
+  font-weight: 500;
+}
+
+/* Add button */
+.add-btn {
+  margin-top: auto; /* Pushes button to bottom of card */
+  padding: 8px 16px;
+  background: #3182ce;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.add-btn:hover {
+  background: #2b6cb0;
+}
+
+/* Confirmation modal */
+.confirmation-modal {
+  position: fixed;
+  top: 20px; /* Position at the top */
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #ffffff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  animation: slideIn 0.3s ease-out;
+  max-width: 300px; /* Smaller width */
+  width: 80%;
+}
+
+.modal-icon {
+  font-size: 24px;
+  color: #3182ce;
+}
+
+.modal-content p {
+  font-size: 14px;
+  font-weight: 500;
+  color: #2d3748;
+  margin: 0;
+}
+
+/* Animation for modal */
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 /* Responsivlik */
@@ -229,8 +321,14 @@
     grid-template-columns: 1fr;
   }
 
+  .image-container {
+    aspect-ratio: 4 / 3; /* Maintain aspect ratio on smaller screens */
+  }
+
   .menu-item-image {
-    height: 120px;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .menu-item-title {
@@ -239,5 +337,138 @@
 
   .menu-item-price {
     font-size: 14px;
+  }
+
+  .menu-item-quantity {
+    font-size: 12px;
+  }
+
+  .modal-content {
+    padding: 8px 16px;
+    max-width: 250px;
+  }
+
+  .modal-content p {
+    font-size: 12px;
+  }
+
+  .modal-icon {
+    font-size: 20px;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Message modal styles */
+.message-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.message-modal-content {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease;
+}
+
+.message-modal-content h4 {
+  margin-top: 0;
+  color: #2d3748;
+  font-size: 18px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.message-modal-content textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 15px;
+  resize: none;
+  min-height: 100px;
+}
+
+.message-modal-content textarea:focus {
+  outline: none;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2);
+}
+
+.message-modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.message-modal-buttons button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.message-modal-buttons button:first-child {
+  background: #e2e8f0;
+  color: #2d3748;
+  border: none;
+}
+
+.message-modal-buttons button:first-child:hover {
+  background: #cbd5e0;
+}
+
+.message-modal-buttons button:last-child {
+  background: #3182ce;
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.message-modal-buttons button:last-child:hover {
+  background: #2b6cb0;
+}
+
+.message-modal-buttons button:last-child:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
