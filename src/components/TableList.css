@@ -1,255 +1,90 @@
-.table-list {
-    padding: 20px;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    min-height: 100vh;
-    font-family: "Segoe UI", sans-serif;
-  }
-  
-  .table-list h2 {
-    text-align: center;
-    color: #2c3e50;
-    font-size: 2.5rem;
-    margin-bottom: 30px;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-  }
-  
-  .tables-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    padding: 0 10px;
-  }
-  
-  .table-card {
-    background: #ffffff;
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    cursor: pointer;
-    text-align: center;
-    border: 2px solid transparent;
-  }
-  
-  .table-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
-  }
-  
-  .table-card.free {
-    background: #e0f7fa;
-    border-color: #26a69a;
-  }
-  
-  .table-card.ordered {
-    background: #fff3e0;
-    border-color: #ff9800;
-  }
-  
-  .table-card.pending {
-    background: #fce4ec;
-    border-color: #e91e63;
-    animation: pulse 2s infinite;
-  }
-  
-  .table-card.closed {
-    background: #e8f5e9;
-    border-color: #4caf50;
-  }
-  
-  .table-card h3 {
-    margin: 0 0 10px;
-    color: #2c3e50;
-    font-size: 1.8rem;
-  }
-  
-  .table-card p {
-    margin: 5px 0;
-    color: #34495e;
-    font-size: 1rem;
-  }
-  
-  .table-actions {
-    margin-top: 15px;
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-  }
-  
-  .receipt-btn, .confirm-btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 25px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background 0.3s ease, transform 0.2s ease;
-  }
-  
-  .receipt-btn {
-    background: #e91e63;
-    color: #fff;
-  }
-  
-  .receipt-btn:hover {
-    background: #c2185b;
-    transform: scale(1.05);
-  }
-  
-  .confirm-btn {
-    background: #4caf50;
-    color: #fff;
-  }
-  
-  .confirm-btn:hover {
-    background: #388e3c;
-    transform: scale(1.05);
-  }
-  
-  @keyframes pulse {
-    0% {
-      box-shadow: 0 0 0 0 rgba(233, 30, 99, 0.4);
-    }
-    70% {
-      box-shadow: 0 0 0 10px rgba(233, 30, 99, 0);
-    }
-    100% {
-      box-shadow: 0 0 0 0 rgba(233, 30, 99, 0);
-    }
-  }
+.tables-container {
+  padding: 20px;
+  text-align: center;
+}
 
+.tables-title {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+}
 
+.tables-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+}
 
+.table-item {
+  width: 180px;
+  border-radius: 12px;
+  padding: 15px;
+  cursor: pointer;
+  transition: 0.3s;
+  background: #f7f7f7;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
 
+.table-item:hover {
+  transform: translateY(-5px);
+  background: #fff;
+}
 
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
+.table-status {
+  font-size: 13px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  color: #fff;
+}
 
+.status-pending {
+  background-color: #ff9800;
+}
 
-  /* Modal Styles */
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5); /* Semi-transparent backdrop */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    animation: fadeIn 0.3s ease;
-  }
-  
-  .modal-content {
-    background: #ffffff;
-    border-radius: 15px;
-    padding: 20px;
-    max-width: 600px;
-    width: 90%;
-    max-height: 80vh;
-    overflow-y: auto;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    position: relative;
-    animation: slideIn 0.3s ease;
-  }
-  
-  .modal-content h3 {
-    color: #2c3e50;
-    font-size: 1.8rem;
-    margin: 0 0 20px;
-    text-align: center;
-  }
-  
-  .modal-content p {
-    color: #34495e;
-    font-size: 1rem;
-    margin: 10px 0;
-  }
-  
-  .order-details {
-    border-top: 1px solid #e0e0e0;
-    padding: 15px 0;
-  }
-  
-  .order-details h4 {
-    color: #2c3e50;
-    font-size: 1.4rem;
-    margin: 0 0 10px;
-  }
-  
-  .order-details h5 {
-    color: #2c3e50;
-    font-size: 1.2rem;
-    margin: 15px 0 5px;
-  }
-  
-  .order-details ul {
-    list-style: none;
-    padding: 0;
-  }
-  
-  .order-details li {
-    color: #34495e;
-    font-size: 1rem;
-    margin: 5px 0;
-  }
-  
-  .close-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: #e91e63;
-    color: #fff;
-    border: none;
-    border-radius: 25px;
-    padding: 8px 15px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: background 0.3s ease, transform 0.2s ease;
-  }
-  
-  .close-btn:hover {
-    background: #c2185b;
-    transform: scale(1.05);
-  }
-  
-  /* Animations */
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-  
-  @keyframes slideIn {
-    from {
-      transform: translateY(20px);
-      opacity: 0;
-    }
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-  
-  /* Responsive Design */
-  @media (max-width: 600px) {
-    .modal-content {
-      width: 95%;
-      padding: 15px;
-    }
-  
-    .modal-content h3 {
-      font-size: 1.5rem;
-    }
-  
-    .order-details h4 {
-      font-size: 1.2rem;
-    }
-  
-    .order-details li {
-      font-size: 0.9rem;
-    }
-  }
-  
+.status-ordered {
+  background-color: #2196f3;
+}
+
+.status-preparing {
+  background-color: #9c27b0;
+}
+
+.status-free {
+  background-color: #4caf50;
+}
+
+.table-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.btn {
+  border: none;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-receipt {
+  background-color: #03a9f4;
+  color: #fff;
+}
+
+.btn-confirm {
+  background-color: #4caf50;
+  color: #fff;
+}
+
+.btn:hover {
+  opacity: 0.85;
+}

@@ -22,45 +22,58 @@ const TableList = () => {
   };
 
   return (
-    <div className="table-list">
-      <h2>Sodiqjon Restorani - Stollar</h2>
-      <div className="tables-grid">
+    <div className="tables-container">
+      <h2 className="tables-title">🍽️ Sodiqjon Restorani — Stollar</h2>
+
+      <div className="tables-wrapper">
         {tables.map((table) => (
           <div
             key={table.id}
-            className={`table-card ${
-              table.status === "To'lov kutilmoqda" ? "pending" : ""
-            } ${
-              table.status === "Zakaz qo'shildi"
-                ? "ordered"
-                : table.status === "Yopish"
-                ? "closed"
-                : "free"
-            }`}
+            className={`table-item ${table.status
+              .replaceAll(" ", "-")
+              .toLowerCase()}`}
             onClick={() => selectTable(table.id)}
           >
-            <h3>{table.name}</h3>
-            <p>Status: {table.status}</p>
-            <p>Ofitsiant: {table.waiter || "Belgilanmagan"}</p>
+            <div className="table-header">
+              <h3 className="table-name">{table.name}</h3>
+              <span
+                className={`table-status ${
+                  table.status === "To'lov kutilmoqda"
+                    ? "status-pending"
+                    : table.status === "Zakaz qo'shildi"
+                    ? "status-ordered"
+                    : table.status === "Yopish"
+                    ? "status-closed"
+                    : "status-free"
+                }`}
+              >
+                {table.status}
+              </span>
+            </div>
+
+            <p className="table-info">
+              Ofitsiant: <strong>{table.waiter || "Belgilanmagan"}</strong>
+            </p>
+
             {table.status === "To'lov kutilmoqda" && user?.role === "admin" && (
-              <div className="table-actions">
+              <div className="table-buttons">
                 <button
-                  className="receipt-btn"
+                  className="btn btn-receipt"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleGenerateReceipt(table.id);
                   }}
                 >
-                  Chek chiqarish
+                  🧾 Chek chiqarish
                 </button>
                 <button
-                  className="confirm-btn"
+                  className="btn btn-confirm"
                   onClick={(e) => {
                     e.stopPropagation();
                     confirmPayment(table.id);
                   }}
                 >
-                  To'lovni tasdiqlash
+                  ✅ To‘lovni tasdiqlash
                 </button>
               </div>
             )}

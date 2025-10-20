@@ -1,4 +1,5 @@
 import React, { useContext, useState, useEffect, useRef } from "react";
+import { toast } from "react-toastify";
 import MenuItem from "../components/MenuItem";
 import OrderForm from "../components/OrderForm";
 import { AppContext } from "../context/AppContext";
@@ -19,10 +20,10 @@ import {
   FaPlus,
   FaPaperPlane,
   FaComment,
+  FaMoneyCheckAlt,
 } from "react-icons/fa";
 import { FiSearch } from "react-icons/fi";
 import { MdAccessTime, MdPerson } from "react-icons/md";
-import jsPDF from "jspdf";
 import logo from "../assets/logo1.png";
 import "./Home.css";
 
@@ -35,86 +36,74 @@ const formatPrice = (price) => {
   }).format(price);
 };
 
-const PaymentModal = ({ tableId, onClose, sendToTelegram }) => {
-  const { tables } = useContext(AppContext);
-  const selectedTable = tables.find((table) => table.id === tableId);
+// PaymentModal with debt marking
+const PaymentModal = ({ tableId, onClose, sendToTelegram, completeOrder, generateReceiptPDF, markAsDebt, confirmPayment }) => {
+  const { tables, ordersHistory } = useContext(AppContext);
+  const selectedTable = tables.find((table) => table.id === tableId) || { orders: [], name: "-" };
+  const [showDebtForm, setShowDebtForm] = useState(false);
+  const [debtDetails, setDebtDetails] = useState({
+    amount: selectedTable.orders.reduce((sum, order) => sum + order.price * order.quantity, 0),
+    debtorName: "",
+    debtorAddress: "",
+    repaymentDate: "",
+  });
+
   const total = selectedTable.orders.reduce(
     (sum, order) => sum + order.price * order.quantity,
     0
   );
 
-  const saveAsPDF = () => {
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    let y = 20;
-
-    if (logo) {
-      doc.addImage(logo, "PNG", pageWidth / 2 - 25, y, 50, 30);
+  const handleDebtSubmit = async (e) => {
+    e.preventDefault();
+    if (!debtDetails.amount || !debtDetails.debtorName || !debtDetails.debtorAddress || !debtDetails.repaymentDate) {
+      toast.error("Iltimos, barcha qarz maydonlarini to'ldiring!");
+      return;
     }
-    y += 40;
+    try {
+      await completeOrder(tableId); // Move to ordersHistory with "To'lov kutilmoqda"
+      await markAsDebt(tableId, debtDetails);
+      toast.success("Buyurtma qarz sifatida belgilandi!");
+      setShowDebtForm(false);
+      onClose();
+    } catch (error) {
+      toast.error("Qarz belgilashda xato: " + error.message);
+    }
+  };
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text("SODIQJON RESTORANI", pageWidth / 2, y, { align: "center" });
-    y += 8;
+  const handleGenerateReceipt = async () => {
+    const order = ordersHistory.find(
+      (o) => o.tableId === tableId && (o.status === "To'lov kutilmoqda" || o.status === "Qarz")
+    ) || {
+      id: Date.now(),
+      items: selectedTable.orders,
+      total,
+      date: new Date(),
+      tableId,
+      tableName: selectedTable.name,
+      waiter: selectedTable.waiter,
+      status: "To'lov kutilmoqda",
+    };
+    try {
+      await generateReceiptPDF(order);
+      toast.success("Chek muvaffaqiyatli yaratildi!");
+      onClose();
+    } catch (error) {
+      toast.error("Chek yaratishda xato: " + error.message);
+    }
+  };
 
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.text("Navoiy ko'chasi 123, Toshkent, O'zbekiston", pageWidth / 2, y, {
-      align: "center",
-    });
-    y += 5;
-    doc.text("Telefon: +998 90 123 45 67", pageWidth / 2, y, {
-      align: "center",
-    });
-    y += 5;
-    doc.text("STIR: 123456789", pageWidth / 2, y, { align: "center" });
-    y += 10;
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.text("TAVSIF", 20, y);
-    doc.text("MIQDOR", 140, y);
-    doc.text("JAMI", 170, y);
-    y += 8;
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    selectedTable.orders.forEach((order, index) => {
-      const splitName = doc.splitTextToSize(`${index + 1}. ${order.name}`, 80);
-      doc.text(splitName, 20, y);
-      doc.text(`x${order.quantity}`, 140, y);
-      doc.text(formatPrice(order.price * order.quantity), 170, y);
-      y += Math.max(10, splitName.length * 5);
-    });
-
-    y += 10;
-    doc.text("JAMI:", 140, y);
-    doc.text(formatPrice(total), 170, y);
-    y += 15;
-
-    doc.text(`To'lov turi: Naqd`, 20, y);
-    y += 7;
-    doc.text(`Chek raqami: #${Math.floor(Math.random() * 10000)}`, 20, y);
-    y += 7;
-    doc.text(`Sana: ${new Date().toLocaleString("uz-UZ")}`, 20, y);
-    y += 15;
-
-    doc.setFontSize(12);
-    doc.text("RAHMAT! YANA KELING!", pageWidth / 2, y, { align: "center" });
-    y += 7;
-
-    doc.setFontSize(9);
-    doc.text("Shikoyatlar uchun: +998 97 463 44 55", pageWidth / 2, y, {
-      align: "center",
-    });
-
-    doc.save(`Chek_${selectedTable.name}_${new Date().toISOString()}.pdf`);
-    onClose();
+  const handleConfirmPayment = async () => {
+    try {
+      await completeOrder(tableId, true); // Complete with payment confirmed
+      toast.success("To'lov tasdiqlandi!");
+      onClose();
+    } catch (error) {
+      toast.error("To'lov tasdiqlashda xato: " + error.message);
+    }
   };
 
   return (
-    <div className="payment-modal">
+    <div className=" payment-modal">
       <div className="payment-modal-content">
         <button className="modal-close" onClick={onClose}>
           <FaTimes />
@@ -129,20 +118,16 @@ const PaymentModal = ({ tableId, onClose, sendToTelegram }) => {
             <div className="restaurant-address">Navoiy ko'chasi 123, Toshkent</div>
             <div className="receipt-meta">
               <span>Stol: {selectedTable.name}</span>
-              <span>Sana: ${new Date().toLocaleString("uz-UZ")}</span>
+              <span>Sana: {new Date().toLocaleString("uz-UZ")}</span>
             </div>
           </div>
 
           <div className="receipt-items">
             {selectedTable.orders.map((order, index) => (
               <div key={index} className="receipt-item">
-                <span className="item-name">
-                  {index + 1}. {order.name}
-                </span>
+                <span className="item-name">{index + 1}. {order.name}</span>
                 <span className="item-quantity">x{order.quantity}</span>
-                <span className="item-price">
-                  {formatPrice(order.price * order.quantity)}
-                </span>
+                <span className="item-price">{formatPrice(order.price * order.quantity)}</span>
               </div>
             ))}
           </div>
@@ -158,25 +143,89 @@ const PaymentModal = ({ tableId, onClose, sendToTelegram }) => {
           </div>
         </div>
 
-        <div className="modal-actions">
-          <button className="btn btn-primary" onClick={saveAsPDF}>
-            <FaPrint /> Chekni chop etish
-          </button>
-          <button
-            className="btn btn-primary"
-            onClick={() => sendToTelegram(selectedTable, selectedTable.orders)}
-          >
-            <FaPaperPlane /> Tayyorlashga yuborish
-          </button>
-          <button className="btn btn-secondary" onClick={onClose}>
-            <FaTimes /> Yopish
-          </button>
-        </div>
+        {!showDebtForm ? (
+          <div className="modal-actions">
+            <button className="btn btn-primary" onClick={handleGenerateReceipt}>
+              <FaPrint /> Chekni chop etish
+            </button>
+            <button className="btn btn-primary" onClick={handleConfirmPayment}>
+              <FaCreditCard /> To'lovni tasdiqlash
+            </button>
+            <button className="btn btn-danger" onClick={() => setShowDebtForm(true)}>
+              <FaMoneyCheckAlt /> Qarz sifatida belgilash
+            </button>
+            <button
+              className="btn btn-primary"
+              onClick={() => sendToTelegram(selectedTable, selectedTable.orders)}
+            >
+              <FaPaperPlane /> Tayyorlashga yuborish
+            </button>
+            <button className="btn btn-secondary" onClick={onClose}>
+              <FaTimes /> Yopish
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleDebtSubmit} className="debt-form">
+            <div className="form-group">
+              <label htmlFor="debtAmount">Qarz summasi (UZS)</label>
+              <input
+                id="debtAmount"
+                type="number"
+                value={debtDetails.amount}
+                onChange={(e) => setDebtDetails({ ...debtDetails, amount: e.target.value })}
+                className="form-input"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="debtorName">Qarzdor ismi</label>
+              <input
+                id="debtorName"
+                type="text"
+                value={debtDetails.debtorName}
+                onChange={(e) => setDebtDetails({ ...debtDetails, debtorName: e.target.value })}
+                className="form-input"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="debtorAddress">Qarzdor manzili</label>
+              <input
+                id="debtorAddress"
+                type="text"
+                value={debtDetails.debtorAddress}
+                onChange={(e) => setDebtDetails({ ...debtDetails, debtorAddress: e.target.value })}
+                className="form-input"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="repaymentDate">To'lov sanasi</label>
+              <input
+                id="repaymentDate"
+                type="date"
+                value={debtDetails.repaymentDate}
+                onChange={(e) => setDebtDetails({ ...debtDetails, repaymentDate: e.target.value })}
+                className="form-input"
+                required
+              />
+            </div>
+            <div className="modal-actions">
+              <button type="button" className="btn btn-secondary" onClick={() => setShowDebtForm(false)}>
+                Bekor qilish
+              </button>
+              <button type="submit" className="btn btn-primary">
+                Saqlash
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );
 };
 
+// MessageModal with toast notifications
 const MessageModal = ({ onClose, sendTelegramMessage }) => {
   const [recipient, setRecipient] = useState("kitchen");
   const [message, setMessage] = useState("");
@@ -190,28 +239,23 @@ const MessageModal = ({ onClose, sendTelegramMessage }) => {
 
   const handleSendMessage = async () => {
     if (!message.trim()) {
-      alert("Xabar matni bo'sh bo'lmasligi kerak!");
+      toast.error("Xabar matni bo'sh bo'lmasligi kerak!");
       return;
     }
 
     const selectedRecipient = recipientOptions.find(
       (opt) => opt.value === recipient
     );
-    const formattedMessage = `
-<b>📩 Operator tomonidan xabar</b>
-📝 Xabar: ${message}
-🕒 Vaqt: ${new Date().toLocaleString("uz-UZ")}
-👤 Yuboruvchi: Admin
-    `;
+    const formattedMessage = `<b>📩 Operator tomonidan xabar</b>\n📝 Xabar: ${message}\n🕒 Vaqt: ${new Date().toLocaleString("uz-UZ")}\n👤 Yuboruvchi: Admin`;
 
     setIsSending(true);
     try {
       await sendTelegramMessage(formattedMessage, selectedRecipient.chatId);
-      alert("Xabar muvaffaqiyatli yuborildi!");
+      toast.success("Xabar muvaffaqiyatli yuborildi!");
       setMessage("");
       onClose();
     } catch (error) {
-      alert("Xabar yuborishda xato: " + error.message);
+      toast.error("Xabar yuborishda xato: " + (error?.message || error));
     } finally {
       setIsSending(false);
     }
@@ -232,6 +276,7 @@ const MessageModal = ({ onClose, sendTelegramMessage }) => {
             id="recipient"
             value={recipient}
             onChange={(e) => setRecipient(e.target.value)}
+            className="form-input"
           >
             {recipientOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -246,6 +291,7 @@ const MessageModal = ({ onClose, sendTelegramMessage }) => {
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Xabaringizni kiriting..."
             rows="5"
+            className="form-input"
           />
           <div className="modal-actions">
             <button
@@ -265,7 +311,7 @@ const MessageModal = ({ onClose, sendTelegramMessage }) => {
   );
 };
 
-function Home() {
+export default function Home() {
   const {
     tables,
     selectTable,
@@ -273,8 +319,12 @@ function Home() {
     menu,
     addToOrder,
     sendTelegramMessage,
+    completeOrder,
+    generateReceiptPDF,
+    markAsDebt,
+    confirmPayment,
   } = useContext(AppContext);
-  
+
   const [showPayment, setShowPayment] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("barcha");
@@ -286,23 +336,46 @@ function Home() {
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [activeSection, setActiveSection] = useState("tables");
   const [isTablesOpen, setIsTablesOpen] = useState(true);
-  
+
   const searchRef = useRef(null);
   const searchInputRef = useRef(null);
   const tablesRef = useRef(null);
   const ordersRef = useRef(null);
   const menuRef = useRef(null);
 
-  // Scroll funksiyasi
+  // Scroll function
   const scrollToSection = (ref) => {
-    ref.current?.scrollIntoView({ behavior: 'smooth' });
+    ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  // Update clock
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date().toLocaleTimeString("uz-UZ"));
     }, 1000);
     return () => clearInterval(timer);
+  }, []);
+
+  // Active section observer
+  useEffect(() => {
+    const sections = [
+      { ref: tablesRef, name: "tables" },
+      { ref: ordersRef, name: "orders" },
+      { ref: menuRef, name: "menu" },
+    ];
+
+    const onScroll = () => {
+      const topOffsets = sections.map((s) => {
+        const rect = s.ref.current?.getBoundingClientRect();
+        return { name: s.name, top: rect ? Math.abs(rect.top) : Infinity };
+      });
+      topOffsets.sort((a, b) => a.top - b.top);
+      if (topOffsets[0]) setActiveSection(topOffsets[0].name);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   const selectedTable = tables.find((table) => table.id === selectedTableId);
@@ -323,13 +396,14 @@ function Home() {
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
     setShowSuggestions(e.target.value.length > 0);
+    setHighlightedIndex(-1);
   };
 
   const handleSuggestionClick = (item) => {
     setSearchQuery(item.name);
     setShowSuggestions(false);
     if (!selectedTableId) {
-      alert("Iltimos, avval stolni tanlang!");
+      toast.error("Iltimos, avval stolni tanlang!");
       return;
     }
     addToOrder({
@@ -338,36 +412,68 @@ function Home() {
       price: item.price,
       quantity: 1,
     });
+    setTimeout(() => scrollToSection(ordersRef), 250);
+  };
+
+  // Keyboard support for suggestions and focusing search with '/'
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === "/") {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+      if (showSuggestions) {
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          setHighlightedIndex((i) => Math.min(i + 1, suggestionItems.length - 1));
+        }
+        if (e.key === "ArrowUp") {
+          e.preventDefault();
+          setHighlightedIndex((i) => Math.max(i - 1, 0));
+        }
+        if (e.key === "Enter" && highlightedIndex >= 0) {
+          e.preventDefault();
+          handleSuggestionClick(suggestionItems[highlightedIndex]);
+        }
+        if (e.key === "Escape") {
+          setShowSuggestions(false);
+        }
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [showSuggestions, highlightedIndex, suggestionItems]);
+
+  // Scroll to orders when selecting a table
+  const handleSelectTable = (id) => {
+    selectTable(id);
+    setTimeout(() => scrollToSection(ordersRef), 200);
   };
 
   const sendToTelegram = async (table, orders) => {
-    const message = `
-🛒 Yangi buyurtma: ${table.name}
-📅 Sana: ${new Date().toLocaleString("uz-UZ")}
-📋 Buyurtmalar:
-${orders
-  .map(
-    (order) =>
-      `${order.name} - ${order.quantity} x ${formatPrice(order.price)}`
-  )
-  .join("\n")}
-💵 Jami: ${formatPrice(
-      orders.reduce((sum, order) => sum + order.price * order.quantity, 0)
-    )}
-`;
+    const total = orders.reduce((sum, order) => sum + order.price * order.quantity, 0);
+    const message = `<b>🛒 Yangi buyurtma: ${table.name}</b>\n📅 Sana: ${new Date().toLocaleString("uz-UZ")}\n📋 Buyurtmalar:\n${orders
+      .map(
+        (order) =>
+          `- ${order.name} x ${order.quantity} (${formatPrice(order.price * order.quantity)})`
+      )
+      .join("\n")}\n💵 Jami: ${formatPrice(total)}\n👨‍🍳 Ofitsiant: ${table.waiter || "Belgilanmagan"}`;
 
     try {
       await sendTelegramMessage(message, "-4646692596");
-      alert("Buyurtma Telegramga yuborildi!");
+      toast.success("Buyurtma Telegramga yuborildi!");
     } catch (error) {
-      alert("Xatolik yuz berdi: " + error.message);
+      toast.error("Xatolik yuz berdi: " + (error?.message || error));
     }
   };
 
   return (
     <div className="home-container">
       <header className="app-header">
-        <h1>Restoran POS Tizimi</h1>
+        <div className="header-left">
+          <img src={logo} alt="logo" className="app-logo" />
+          <h1>Restoran POS Tizimi</h1>
+        </div>
         <div className="header-info">
           <span className="time-display">
             <MdAccessTime /> {currentTime}
@@ -379,19 +485,19 @@ ${orders
       </header>
 
       <nav className="section-nav">
-        <button 
+        <button
           className={`nav-btn ${activeSection === "tables" ? "active" : ""}`}
           onClick={() => scrollToSection(tablesRef)}
         >
           <FaTable /> Stollar
         </button>
-        <button 
+        <button
           className={`nav-btn ${activeSection === "orders" ? "active" : ""}`}
           onClick={() => scrollToSection(ordersRef)}
         >
           <FaShoppingCart /> Buyurtmalar
         </button>
-        <button 
+        <button
           className={`nav-btn ${activeSection === "menu" ? "active" : ""}`}
           onClick={() => scrollToSection(menuRef)}
         >
@@ -406,7 +512,10 @@ ${orders
               <FaTable /> Stollar
               <span className="section-badge">{tables.length} jami</span>
             </h2>
-            <button className="toggle-btn" onClick={() => setIsTablesOpen(!isTablesOpen)}>
+            <button
+              className="toggle-btn"
+              onClick={() => setIsTablesOpen((s) => !s)}
+            >
               {isTablesOpen ? <FaChevronUp /> : <FaChevronDown />}
               {isTablesOpen ? "Yopish" : "Ochish"}
             </button>
@@ -415,16 +524,14 @@ ${orders
             {tables.map((table) => (
               <div
                 key={table.id}
-                onClick={() => selectTable(table.id)}
+                onClick={() => handleSelectTable(table.id)}
                 className={`table-card ${
                   selectedTableId === table.id ? "active" : ""
                 } ${table.orders.length > 0 ? "occupied" : "available"}`}
               >
                 <div className="table-number">{table.name}</div>
                 {table.orders.length > 0 && (
-                  <span className="order-count">
-                    {table.orders.length} buyurtma
-                  </span>
+                  <span className="order-count">{table.orders.length} buyurtma</span>
                 )}
                 {table.waiter && (
                   <div className="waiter-info">
@@ -480,14 +587,15 @@ ${orders
           </h2>
           <div className="menu-controls">
             <div className="search-bar" ref={searchRef}>
-              <FiSearch />
               <input
                 type="text"
                 placeholder="Ovqat qidirish... (/)"
                 value={searchQuery}
                 onChange={handleSearchChange}
                 ref={searchInputRef}
+                onFocus={() => setShowSuggestions(searchQuery.length > 0)}
               />
+              <FiSearch className="search-icon" />
               {showSuggestions && (
                 <ul className="suggestions-list">
                   {suggestionItems.map((item, index) => (
@@ -503,9 +611,7 @@ ${orders
                         <span className="suggestion-name">
                           {item.name} ({item.category})
                         </span>
-                        <span className="suggestion-price">
-                          {formatPrice(item.price)}
-                        </span>
+                        <span className="suggestion-price">{formatPrice(item.price)}</span>
                       </div>
                     </li>
                   ))}
@@ -516,6 +622,7 @@ ${orders
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
+                className="form-input"
               >
                 {categories.map((cat) => (
                   <option key={cat} value={cat}>
@@ -584,9 +691,9 @@ ${orders
           >
             <FaBook /> Menyuga o'tish
           </button>
-          <button 
-            className="fab-action-btn" 
-            onClick={() => setIsTablesOpen(!isTablesOpen)}
+          <button
+            className="fab-action-btn"
+            onClick={() => setIsTablesOpen((s) => !s)}
           >
             {isTablesOpen ? <FaChevronUp /> : <FaChevronDown />}
             Stollarni {isTablesOpen ? "yopish" : "ochish"}
@@ -599,6 +706,10 @@ ${orders
           tableId={selectedTableId}
           onClose={() => setShowPayment(false)}
           sendToTelegram={sendToTelegram}
+          completeOrder={completeOrder}
+          generateReceiptPDF={generateReceiptPDF}
+          markAsDebt={markAsDebt}
+          confirmPayment={confirmPayment}
         />
       )}
 
@@ -611,5 +722,3 @@ ${orders
     </div>
   );
 }
-
-export default Home;

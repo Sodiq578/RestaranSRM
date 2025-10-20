@@ -1,3 +1,13 @@
+
+.app-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 30px;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+}
+
 .App {
   text-align: center;
 }
