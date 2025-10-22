@@ -246,7 +246,7 @@ export const AppProvider = ({ children }) => {
 
   const removeFromOrder = (tableId, index) => {
     const table = tables.find((t) => t.id === tableId);
-    if (!table || index >= table.orders.length) {
+    if (!table || !table.orders || index >= table.orders.length) {
       toast.error("Buyurtma topilmadi!");
       return false;
     }
@@ -269,7 +269,9 @@ export const AppProvider = ({ children }) => {
     setSentOrders((prev) => {
       const updated = { ...prev };
       if (updated[tableId]) {
-        updated[tableId] = updated[tableId].filter((order) => order.id !== removedItem.id);
+        updated[tableId] = updated[tableId].filter((order) => 
+          !(order.id === removedItem.id && order.quantity === removedItem.quantity)
+        );
         if (updated[tableId].length === 0) delete updated[tableId];
       }
       return updated;
@@ -413,9 +415,9 @@ ${formatItemsList(table.orders)}
 
   const completeOrder = async (tableId, paymentConfirmed = false) => {
     const table = tables.find((t) => t.id === tableId);
-    if (!table || table.orders.length === 0) {
+    if (!table || !table.orders || table.orders.length === 0) {
       toast.error("Buyurtma bo'sh!");
-      return;
+      return false;
     }
 
     const total = table.orders.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -453,9 +455,10 @@ ${formatItemsList(table.orders)}
 📌 To'lov holati: ${paymentConfirmed ? "To'langan" : "To'lov kutilmoqda"}
 👨‍🍳 Ofitsiant: ${table.waiter || "Belgilanmagan"}
 🕒 Vaqt: ${new Date().toLocaleString("uz-UZ")}
-      `;
+    `;
       await sendTelegramMessage(completionMessage, MAIN_REPORTING_CHAT_ID);
 
+      // Daily report yangilash
       const today = new Date().toLocaleDateString("uz-UZ");
       const todayOrders = newOrdersHistory.filter(
         (order) => new Date(order.date).toLocaleDateString("uz-UZ") === today
@@ -463,12 +466,32 @@ ${formatItemsList(table.orders)}
 
       const ordersCount = todayOrders.length;
       const totalRevenue = todayOrders.reduce((sum, order) => sum + order.total, 0);
-      const topSellers = getTopSellingItems(todayOrders);
-      const bestSellers = topSellers.map((item) => ({
-        name: item.name,
-        count: item.totalQuantity,
-        total: item.totalQuantity * item.price,
-      }));
+      
+      // Eng ko'p sotilgan mahsulotlarni hisoblash
+      const itemSales = {};
+      todayOrders.forEach(order => {
+        order.items.forEach(item => {
+          if (!itemSales[item.id]) {
+            itemSales[item.id] = {
+              name: item.name,
+              count: 0,
+              totalQuantity: 0,
+              price: item.price
+            };
+          }
+          itemSales[item.id].count += 1;
+          itemSales[item.id].totalQuantity += item.quantity;
+        });
+      });
+
+      const bestSellers = Object.values(itemSales)
+        .sort((a, b) => b.totalQuantity - a.totalQuantity)
+        .slice(0, 3)
+        .map(item => ({
+          name: item.name,
+          count: item.totalQuantity,
+          total: item.totalQuantity * item.price
+        }));
 
       setDailyReport({ ordersCount, totalRevenue, bestSellers });
 
@@ -512,8 +535,10 @@ ${formatItemsList(table.orders)}
       }
 
       toast.success("Buyurtma yakunlandi!");
+      return true;
     } catch (error) {
       toast.error("Hisobot yuborishda xato: " + error.message);
+      return false;
     }
   };
 
@@ -666,6 +691,7 @@ ${formatItemsList(table.orders)}
         deleteCategory,
         generateReceiptPDF,
         markAsDebt,
+        sendTelegramMessage,
       }}
     >
       {children}

@@ -1,7 +1,6 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { AppContext } from "../context/AppContext";
-import { FaTrash, FaCreditCard, FaCheckCircle } from "react-icons/fa";
-import { MdKitchen } from "react-icons/md";
+import { FaEye, FaFilePdf } from "react-icons/fa";
 import "./OrderForm.css";
 
 const formatPrice = (price) => {
@@ -13,158 +12,105 @@ const formatPrice = (price) => {
   }).format(price);
 };
 
-const OrderForm = ({ tableId, openPayment }) => {
-  const {
-    tables,
-    updateOrder,
-    removeFromOrder,
-    sendOrdersToPreparation,
-    completeOrder,
-  } = useContext(AppContext);
+const OrdersHistory = () => {
+  const { ordersHistory, generateReceiptPDF } = useContext(AppContext);
+  const [filterDate, setFilterDate] = useState("");
+  const [filterTable, setFilterTable] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
-  const table = tables.find((t) => t.id === tableId);
-  const hasOrders = table?.orders.length > 0;
+  // Filter orders based on date, table, and status
+  const filteredOrders = ordersHistory.filter((order) => {
+    const orderDate = new Date(order.date).toLocaleDateString("uz-UZ");
+    const matchesDate = filterDate ? orderDate.includes(filterDate) : true;
+    const matchesTable = filterTable
+      ? order.tableName.toLowerCase().includes(filterTable.toLowerCase())
+      : true;
+    const matchesStatus = filterStatus ? order.status === filterStatus : true;
+    return matchesDate && matchesTable && matchesStatus;
+  });
 
-  // === MIKDORNI O‘ZGARTIRISH ===
-  const handleQuantityChange = (index, quantity) => {
-    if (quantity >= 1) {
-      updateOrder(tableId, index, quantity);
-    }
+  // Handle viewing order details
+  const handleViewDetails = (order) => {
+    setSelectedOrder(order);
   };
 
-  // === TAYYORLASHGA YUBORISH ===
-  const handlePrepareOrders = async () => {
-    const isSent = table?.status === "Tayyorlashga yuborildi";
-    if (isSent) {
-      if (
-        !window.confirm(
-          "Buyurtma allaqachon yuborilgan. Yangi o'zgarishlarni yuborishni xohlaysizmi?"
-        )
-      ) {
-        return;
-      }
-    }
-    const success = await sendOrdersToPreparation(tableId);
-    if (success) {
-      alert("✅ Buyurtmalar muvaffaqiyatli tayyorlashga yuborildi!");
-    }
+  // Handle generating PDF for an order
+  const handleGeneratePDF = (order) => {
+    generateReceiptPDF(order);
   };
-
-  // === MAHSULOTNI O‘CHIRISH ===
-  const handleRemoveItem = async (index) => {
-    const item = table.orders[index];
-    const isSent = table?.status === "Tayyorlashga yuborildi";
-
-    if (isSent) {
-      if (
-        !window.confirm(
-          `"${item.name}" taomini bekor qilmoqchimisiz? Bu haqda oshxonaga xabar yuboriladi.`
-        )
-      ) {
-        return;
-      }
-    } else {
-      if (!window.confirm(`"${item.name}" taomini o‘chirishni xohlaysizmi?`)) {
-        return;
-      }
-    }
-
-    const success = await removeFromOrder(tableId, index);
-    if (success) {
-      alert(
-        `"${item.name}" muvaffaqiyatli ${
-          isSent ? "bekor qilindi" : "o‘chirildi"
-        }!`
-      );
-    }
-  };
-
-  // === BUYURTMANI YOPISH (TO‘LOV QILINMAGAN) ===
-  const handleCompleteOrder = async () => {
-    const isSent = table?.status === "Tayyorlashga yuborildi";
-    if (isSent) {
-      if (
-        !window.confirm(
-          "Buyurtma tayyorlashga yuborilgan. Uni yopib, stolni bo‘shatmoqchimisiz?"
-        )
-      ) {
-        return;
-      }
-    } else {
-      if (
-        !window.confirm("Buyurtmani yopib, stolni bo‘shatmoqchimisiz (to‘lovsiz)?")
-      ) {
-        return;
-      }
-    }
-    const success = await completeOrder(tableId, false); // ⏳ To‘lov qilinmadi
-    if (success) {
-      alert("🟡 Buyurtma yopildi (to‘lovsiz), stol bo‘shatildi!");
-    }
-  };
-
-  // === BUYURTMANI TO‘LANDI DEB YOPISH ===
-  const handlePaidComplete = async () => {
-    if (
-      !window.confirm(
-        "💳 To‘lov amalga oshirildimi? Buyurtma to‘langan deb yopiladi."
-      )
-    )
-      return;
-    const success = await completeOrder(tableId, true); // ✅ To‘landi
-    if (success) {
-      alert("✅ Buyurtma muvaffaqiyatli yopildi va to‘landi!");
-    }
-  };
-
-  if (!table) return null;
 
   return (
-    <div className="order-form">
-      <h2>{table.name} — Buyurtmalar</h2>
+    <div className="orders-history">
+      <h2>Buyurtmalar Tarixi</h2>
 
-      <div className="order-list">
-        {table.orders.length === 0 ? (
-          <p>Buyurtmalar yo‘q</p>
+      {/* Filter Section */}
+      <div className="filters">
+        <div className="filter-group">
+          <label>Sana bo'yicha filter:</label>
+          <input
+            type="text"
+            placeholder="DD/MM/YYYY"
+            value={filterDate}
+            onChange={(e) => setFilterDate(e.target.value)}
+          />
+        </div>
+        <div className="filter-group">
+          <label>Stol bo'yicha filter:</label>
+          <input
+            type="text"
+            placeholder="Stol nomi"
+            value={filterTable}
+            onChange={(e) => setFilterTable(e.target.value)}
+          />
+        </div>
+        <div className="filter-group">
+          <label>Status bo'yicha filter:</label>
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+          >
+            <option value="">Barchasi</option>
+            <option value="To'lov qilindi">To'lov qilindi</option>
+            <option value="To'lov kutilmoqda">To'lov kutilmoqda</option>
+            <option value="Qarz">Qarz</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Orders List */}
+      <div className="orders-list">
+        {filteredOrders.length === 0 ? (
+          <p className="no-orders">Buyurtmalar tarixi mavjud emas</p>
         ) : (
           <>
             <div className="order-item header">
-              <span>Mahsulot</span>
-              <span>Soni</span>
-              <span>Narxi</span>
+              <span>ID</span>
+              <span>Stol</span>
+              <span>Sana</span>
+              <span>Jami</span>
+              <span>Status</span>
               <span>Amallar</span>
             </div>
-
-            {table.orders.map((order, index) => (
-              <div key={index} className="order-item">
-                <span className="item-name">
-                  {order.name} ({order.category})
-                </span>
-
-                <span className="item-quantity">
-                  <input
-                    type="number"
-                    min="1"
-                    value={order.quantity}
-                    onChange={(e) =>
-                      handleQuantityChange(index, parseInt(e.target.value))
-                    }
-                  />
-                </span>
-
-                <span className="item-price">
-                  {formatPrice(order.price * order.quantity)}
-                </span>
-
-                <span className="item-actions">
+            {filteredOrders.map((order) => (
+              <div key={order.id} className="order-item">
+                <span>{order.id}</span>
+                <span>{order.tableName} (ID: {order.tableId})</span>
+                <span>{new Date(order.date).toLocaleString("uz-UZ")}</span>
+                <span>{formatPrice(order.total)}</span>
+                <span>{order.status}</span>
+                <span className="actions">
                   <button
-                    className="btn btn-danger"
-                    onClick={() => handleRemoveItem(index)}
+                    className="btn btn-info"
+                    onClick={() => handleViewDetails(order)}
                   >
-                    <FaTrash />{" "}
-                    {table.status === "Tayyorlashga yuborildi"
-                      ? "Bekor qilish"
-                      : "O‘chirish"}
+                    <FaEye /> Ko'rish
+                  </button>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => handleGeneratePDF(order)}
+                  >
+                    <FaFilePdf /> PDF
                   </button>
                 </span>
               </div>
@@ -173,55 +119,45 @@ const OrderForm = ({ tableId, openPayment }) => {
         )}
       </div>
 
-      <div className="order-actions">
-        <button
-          className="btn btn-primary"
-          onClick={handlePrepareOrders}
-          disabled={!hasOrders}
-        >
-          <MdKitchen /> Tayyorlashga yuborish
-        </button>
-
-        <button
-          className="btn btn-success"
-          onClick={openPayment}
-          disabled={!hasOrders}
-        >
-          <FaCreditCard /> To‘lov
-        </button>
-
-        <button
-          className="btn btn-info"
-          onClick={handlePaidComplete}
-          disabled={!hasOrders}
-        >
-          ✅ To‘landi
-        </button>
-
-        <button
-          className="btn btn-warning"
-          onClick={handleCompleteOrder}
-          disabled={!hasOrders}
-        >
-          <FaCheckCircle /> Yopish (to‘lovsiz)
-        </button>
-      </div>
-
-      {hasOrders && (
-        <div className="order-total">
-          <strong>
-            Jami:{" "}
-            {formatPrice(
-              table.orders.reduce(
-                (sum, order) => sum + order.price * order.quantity,
-                0
-              )
+      {/* Order Details Modal */}
+      {selectedOrder && (
+        <div className="order-details-modal">
+          <div className="modal-content">
+            <h3>Buyurtma Tafsilotlari (ID: {selectedOrder.id})</h3>
+            <p><strong>Stol:</strong> {selectedOrder.tableName} (ID: {selectedOrder.tableId})</p>
+            <p><strong>Ofitsiant:</strong> {selectedOrder.waiter || "Belgilanmagan"}</p>
+            <p><strong>Sana:</strong> {new Date(selectedOrder.date).toLocaleString("uz-UZ")}</p>
+            <p><strong>Status:</strong> {selectedOrder.status}</p>
+            <h4>Buyurtmalar:</h4>
+            <ul>
+              {selectedOrder.items.map((item, index) => (
+                <li key={index}>
+                  {item.name} x {item.quantity} = {formatPrice(item.price * item.quantity)}
+                  {item.category && ` (${item.category})`}
+                </li>
+              ))}
+            </ul>
+            <p><strong>Jami:</strong> {formatPrice(selectedOrder.total)}</p>
+            {selectedOrder.status === "Qarz" && selectedOrder.debtDetails && (
+              <div className="debt-details">
+                <h4>Qarz Ma'lumotlari:</h4>
+                <p><strong>Summa:</strong> {formatPrice(selectedOrder.debtDetails.amount)}</p>
+                <p><strong>Qarzdor:</strong> {selectedOrder.debtDetails.debtorName}</p>
+                <p><strong>Manzil:</strong> {selectedOrder.debtDetails.debtorAddress}</p>
+                <p><strong>To'lov sanasi:</strong> {new Date(selectedOrder.debtDetails.repaymentDate).toLocaleDateString("uz-UZ")}</p>
+              </div>
             )}
-          </strong>
+            <button
+              className="btn btn-secondary"
+              onClick={() => setSelectedOrder(null)}
+            >
+              Yopish
+            </button>
+          </div>
         </div>
       )}
     </div>
   );
 };
 
-export default OrderForm;
+export default OrdersHistory;

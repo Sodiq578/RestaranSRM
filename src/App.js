@@ -8,7 +8,9 @@ import Reports from "./pages/Reports";
 import AdminPanel from "./pages/AdminPanel";
 import Login from "./pages/Login";
 import DebtManagement from "./pages/DebtManagement";
-import { AppProvider } from "./context/AppContext"; // Correct path
+import OrdersHistory from "./components/OrderForm"; // New import
+import { AppProvider } from "./context/AppContext";
+
 
 function AppContent() {
   const location = useLocation();
@@ -20,6 +22,7 @@ function AppContent() {
       <div className={isLoginPage ? "" : "app-container"}>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/orders" element={<OrdersHistory />} /> {/* Updated route */}
           <Route path="/reports" element={<Reports />} />
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/login" element={<Login />} />

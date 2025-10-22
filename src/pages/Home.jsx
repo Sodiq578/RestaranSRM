@@ -24,7 +24,6 @@ import {
 } from "react-icons/fa";
 import { FiSearch } from "react-icons/fi";
 import { MdAccessTime, MdPerson } from "react-icons/md";
-import logo from "../assets/logo1.png";
 import "./Home.css";
 
 const formatPrice = (price) => {
@@ -469,20 +468,7 @@ export default function Home() {
 
   return (
     <div className="home-container">
-      <header className="app-header">
-        <div className="header-left">
-          <img src={logo} alt="logo" className="app-logo" />
-          <h1>Restoran POS Tizimi</h1>
-        </div>
-        <div className="header-info">
-          <span className="time-display">
-            <MdAccessTime /> {currentTime}
-          </span>
-          <span className="user-info">
-            <MdPerson /> Operator: Admin
-          </span>
-        </div>
-      </header>
+    
 
       <nav className="section-nav">
         <button

@@ -1,10 +1,10 @@
-// src/components/Reports.jsx
 import React, { useContext, useState } from "react";
 import { AppContext } from "../context/AppContext";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
+import "./Reports.css";
 
 // Format price for UZS
 const formatPrice = (price) => {
@@ -21,18 +21,20 @@ const Modal = ({ isOpen, onClose, children }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white w-full max-w-[95vw] max-h-[95vh] overflow-auto p-6 rounded-lg shadow-lg">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">Hisobotlar</h2>
+    <div className="reports-modal-overlay">
+      <div className="reports-modal">
+        <div className="modal-header">
+          <h2 className="modal-title">Hisobotlar</h2>
           <button
             onClick={onClose}
-            className="text-red-500 hover:text-red-700 font-bold text-xl"
+            className="modal-close-btn"
           >
-            X
+            ×
           </button>
         </div>
-        {children}
+        <div className="modal-content">
+          {children}
+        </div>
       </div>
     </div>
   );
@@ -41,44 +43,76 @@ const Modal = ({ isOpen, onClose, children }) => {
 // ReportTable component with debt details
 const ReportTable = ({ orders }) => {
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full bg-white border border-gray-300">
+    <div className="table-container">
+      <table className="reports-table">
         <thead>
-          <tr className="bg-gray-100">
-            <th className="py-2 px-4 border-b text-left">#</th>
-            <th className="py-2 px-4 border-b text-left">Stol</th>
-            <th className="py-2 px-4 border-b text-left">Stol ID</th>
-            <th className="py-2 px-4 border-b text-left">Ofitsiant</th>
-            <th className="py-2 px-4 border-b text-left">Sana</th>
-            <th className="py-2 px-4 border-b text-left">Jami</th>
-            <th className="py-2 px-4 border-b text-left">Status</th>
-            <th className="py-2 px-4 border-b text-left">Buyurtmalar</th>
-            <th className="py-2 px-4 border-b text-left">Qarz ma'lumotlari</th>
+          <tr>
+            <th>#</th>
+            <th>Stol</th>
+            <th>Stol ID</th>
+            <th>Ofitsiant</th>
+            <th>Sana</th>
+            <th>Jami</th>
+            <th>Status</th>
+            <th>Buyurtmalar</th>
+            <th>Qarz ma'lumotlari</th>
           </tr>
         </thead>
         <tbody>
           {orders.map((order, index) => (
-            <tr key={order.id} className="hover:bg-gray-50">
-              <td className="py-2 px-4 border-b">{index + 1}</td>
-              <td className="py-2 px-4 border-b">{order.tableName}</td>
-              <td className="py-2 px-4 border-b">{order.tableId}</td>
-              <td className="py-2 px-4 border-b">{order.waiter || "Belgilanmagan"}</td>
-              <td className="py-2 px-4 border-b">{new Date(order.date).toLocaleString("uz-UZ")}</td>
-              <td className="py-2 px-4 border-b">{formatPrice(order.total)}</td>
-              <td className="py-2 px-4 border-b">{order.status}</td>
-              <td className="py-2 px-4 border-b">
-                {order.items.map((item) => `${item.name} x ${item.quantity}`).join(", ")}
+            <tr key={order.id}>
+              <td>{index + 1}</td>
+              <td>{order.tableName}</td>
+              <td>{order.tableId}</td>
+              <td>
+                <span className="waiter-badge">
+                  {order.waiter || "Belgilanmagan"}
+                </span>
               </td>
-              <td className="py-2 px-4 border-b">
+              <td>{new Date(order.date).toLocaleString("uz-UZ")}</td>
+              <td style={{fontWeight: '600', color: '#059669'}}>{formatPrice(order.total)}</td>
+              <td>
+                <span className={`status-badge ${
+                  order.status === "To'lov qilindi" 
+                    ? "status-paid" 
+                    : order.status === "Qarz"
+                    ? "status-debt"
+                    : "status-pending"
+                }`}>
+                  {order.status}
+                </span>
+              </td>
+              <td>
+                <div className="items-container">
+                  {order.items.map((item, idx) => (
+                    <span key={idx} className="item-tag">
+                      {item.name} × {item.quantity}
+                    </span>
+                  ))}
+                </div>
+              </td>
+              <td>
                 {order.status === "Qarz" && order.debtDetails ? (
-                  <div className="debt-details">
-                    <p><strong>Summa:</strong> {formatPrice(order.debtDetails.amount)}</p>
-                    <p><strong>Qarzdor:</strong> {order.debtDetails.debtorName}</p>
-                    <p><strong>Manzil:</strong> {order.debtDetails.debtorAddress}</p>
-                    <p><strong>To'lov sanasi:</strong> {new Date(order.debtDetails.repaymentDate).toLocaleDateString("uz-UZ")}</p>
+                  <div className="debt-details-card">
+                    <div className="debt-detail-item">
+                      <span className="debt-label">Summa:</span>{" "}
+                      <span className="debt-value">{formatPrice(order.debtDetails.amount)}</span>
+                    </div>
+                    <div className="debt-detail-item">
+                      <span className="debt-label">Qarzdor:</span>{" "}
+                      {order.debtDetails.debtorName}
+                    </div>
+                    <div className="debt-detail-item">
+                      <span className="debt-label">Manzil:</span>{" "}
+                      {order.debtDetails.debtorAddress}
+                    </div>
+                    <div className="debt-detail-item">
+                      <span className="debt-label">To'lov sanasi:</span>{" "}
+                      {new Date(order.debtDetails.repaymentDate).toLocaleDateString("uz-UZ")}
+                    </div>
                   </div>
                 ) : (
-                  "Yo'q"
+                  <span style={{color: '#9ca3af', fontSize: '0.9rem'}}>Yo'q</span>
                 )}
               </td>
             </tr>
@@ -92,32 +126,48 @@ const ReportTable = ({ orders }) => {
 // PaymentHistoryTable component
 const PaymentHistoryTable = ({ payments }) => {
   return (
-    <div className="overflow-x-auto mt-6">
-      <h2 className="text-2xl font-bold mb-4">To'lovlar Tarixi</h2>
-      <table className="min-w-full bg-white border border-gray-300">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="py-2 px-4 border-b text-left">#</th>
-            <th className="py-2 px-4 border-b text-left">Stol</th>
-            <th className="py-2 px-4 border-b text-left">Ofitsiant</th>
-            <th className="py-2 px-4 border-b text-left">Sana</th>
-            <th className="py-2 px-4 border-b text-left">Jami</th>
-            <th className="py-2 px-4 border-b text-left">To'lov holati</th>
-          </tr>
-        </thead>
-        <tbody>
-          {payments.map((payment, index) => (
-            <tr key={payment.id} className="hover:bg-gray-50">
-              <td className="py-2 px-4 border-b">{index + 1}</td>
-              <td className="py-2 px-4 border-b">{payment.tableName}</td>
-              <td className="py-2 px-4 border-b">{payment.waiter || "Belgilanmagan"}</td>
-              <td className="py-2 px-4 border-b">{new Date(payment.date).toLocaleString("uz-UZ")}</td>
-              <td className="py-2 px-4 border-b">{formatPrice(payment.total)}</td>
-              <td className="py-2 px-4 border-b">{payment.status}</td>
+    <div className="payment-history-section">
+      <div className="table-container">
+        <div className="payment-history-header">
+          <h2 className="payment-history-title">To'lovlar Tarixi</h2>
+        </div>
+        <table className="reports-table payment-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Stol</th>
+              <th>Ofitsiant</th>
+              <th>Sana</th>
+              <th>Jami</th>
+              <th>To'lov holati</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {payments.map((payment, index) => (
+              <tr key={payment.id}>
+                <td>{index + 1}</td>
+                <td>{payment.tableName}</td>
+                <td>
+                  <span className="waiter-badge">
+                    {payment.waiter || "Belgilanmagan"}
+                  </span>
+                </td>
+                <td>{new Date(payment.date).toLocaleString("uz-UZ")}</td>
+                <td style={{fontWeight: '600', color: '#059669'}}>{formatPrice(payment.total)}</td>
+                <td>
+                  <span className={`status-badge ${
+                    payment.status === "To'lov qilindi" 
+                      ? "status-paid" 
+                      : "status-debt"
+                  }`}>
+                    {payment.status}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
@@ -263,57 +313,85 @@ function Reports() {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <h1 className="text-center text-3xl font-bold mb-6 text-gray-800">Hisobotlar</h1>
+    <div className="reports-container">
+      <div className="reports-header">
+        <h1 className="reports-title">Hisobotlar</h1>
+        <p className="reports-subtitle">Barcha buyurtmalar va to'lovlar tarixi</p>
+      </div>
 
       {/* Search Filters */}
-      <div className="mb-6 flex flex-col sm:flex-row gap-4">
-        <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Ofitsiant bo'yicha qidirish</label>
-          <input
-            type="text"
-            value={searchWaiter}
-            onChange={(e) => setSearchWaiter(e.target.value)}
-            placeholder="Ofitsiant ismini kiriting"
-            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Stol bo'yicha qidirish</label>
-          <input
-            type="text"
-            value={searchTable}
-            onChange={(e) => setSearchTable(e.target.value)}
-            placeholder="Stol nomini kiriting"
-            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+      <div className="search-filters">
+        <h2 className="search-filters-title">Qidiruv Filtrlari</h2>
+        <div className="search-grid">
+          <div className="search-group">
+            <label className="search-label">Ofitsiant bo'yicha qidirish</label>
+            <div className="search-input-wrapper">
+              <svg className="search-icon" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+              </svg>
+              <input
+                type="text"
+                value={searchWaiter}
+                onChange={(e) => setSearchWaiter(e.target.value)}
+                placeholder="Ofitsiant ismini kiriting"
+                className="search-input"
+              />
+            </div>
+          </div>
+          <div className="search-group">
+            <label className="search-label">Stol bo'yicha qidirish</label>
+            <div className="search-input-wrapper">
+              <svg className="search-icon" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 0v12h8V4H6z" clipRule="evenodd" />
+              </svg>
+              <input
+                type="text"
+                value={searchTable}
+                onChange={(e) => setSearchTable(e.target.value)}
+                placeholder="Stol nomini kiriting"
+                className="search-input"
+              />
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Buttons */}
-      <div className="flex justify-end mb-6 space-x-4">
+      <div className="actions-toolbar">
         <button
           onClick={() => setIsModalOpen(true)}
-          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+          className="action-btn btn-full-report"
         >
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
           To'liq Hisobot
         </button>
         <button
           onClick={exportToExcel}
-          className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors"
+          className="action-btn btn-excel"
         >
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
           Excel'ga Eksport
         </button>
         <button
           onClick={exportToWord}
-          className="bg-purple-500 text-white px-4 py-2 rounded-md hover:bg-purple-600 transition-colors"
+          className="action-btn btn-word"
         >
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
           Word'ga Eksport
         </button>
         <button
           onClick={() => setShowPaymentHistory(!showPaymentHistory)}
-          className="bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600 transition-colors"
+          className="action-btn btn-payment-history"
         >
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
           {showPaymentHistory ? "Hisobotlarni Ko'rsat" : "To'lovlar Tarixini Ko'rsat"}
         </button>
       </div>
@@ -324,6 +402,14 @@ function Reports() {
       ) : (
         <ReportTable orders={filteredOrders} />
       )}
+
+      {/* Results Counter */}
+      <div className="results-counter">
+        {showPaymentHistory 
+          ? `Jami ${paymentHistory.length} ta to'lov topildi` 
+          : `Jami ${filteredOrders.length} ta buyurtma topildi`
+        }
+      </div>
 
       {/* Modal */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
