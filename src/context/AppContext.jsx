@@ -23,7 +23,6 @@ const formatPrice = (price) =>
   }).format(price);
 
 export const AppProvider = ({ children }) => {
-  // Initialize state with localStorage or default values
   const [tables, setTables] = useState(() => {
     const saved = localStorage.getItem("tables");
     return saved
@@ -93,14 +92,12 @@ export const AppProvider = ({ children }) => {
         ];
   });
 
-  // Telegram settings
   const TELEGRAM_BOT_TOKEN = "7885205848:AAEcgs2vXjZqyV40f6Jvl8Rj1OMq0r7QGkA";
   const MAIN_REPORTING_CHAT_ID = "-4646692596";
   const BAR_CHAT_ID = "-4646692596";
   const SALATCHILAR_CHAT_ID = "-4753754534";
   const OSHXONA_CHAT_ID = "-4686557731";
 
-  // Save state to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem("tables", JSON.stringify(tables));
     localStorage.setItem("categories", JSON.stringify(categories));
@@ -112,12 +109,41 @@ export const AppProvider = ({ children }) => {
     localStorage.setItem("sentOrders", JSON.stringify(sentOrders));
   }, [tables, categories, ordersHistory, menu, dailyReport, lastMessageId, lastMessageDate, sentOrders]);
 
+  // Format items list without prices
+  const formatItemsList = (items) => {
+    const itemList = items.length
+      ? items
+          .map((item) => `  • ${item.name} x${item.quantity}`)
+          .join("\n")
+      : "  Hech qanday buyurtma yo'q";
+
+    const comments = items
+      .filter((item) => item.comment && item.comment.trim().length > 2)
+      .map((item) => `  • <b>${item.name}</b>: ${item.comment}`)
+      .join("\n");
+
+    return {
+      itemList,
+      comments: comments
+        ? `\n\n<b>📝 Izohlar:</b>\n<pre>----------------------\n${comments}\n----------------------</pre>`
+        : "",
+    };
+  };
+
   const addMenuItem = (item) => {
+    if (!item.name || !item.price || !item.category) {
+      toast.error("Iltimos, barcha maydonlarni to'ldiring!");
+      return;
+    }
     setMenu([...menu, { id: Date.now(), ...item }]);
     toast.success("Taom muvaffaqiyatli qo'shildi!");
   };
 
   const updateMenuItem = (id, updatedItem) => {
+    if (!updatedItem.name || !updatedItem.price || !updatedItem.category) {
+      toast.error("Iltimos, barcha maydonlarni to'ldiring!");
+      return;
+    }
     setMenu(menu.map((item) => (item.id === id ? { ...item, ...updatedItem } : item)));
     toast.success("Taom muvaffaqiyatli yangilandi!");
   };
@@ -128,7 +154,10 @@ export const AppProvider = ({ children }) => {
   };
 
   const addCategory = (name) => {
-    // Check if category already exists
+    if (!name || name.trim().length < 2) {
+      toast.error("Kategoriya nomi kamida 2 harfdan iborat bo'lishi kerak!");
+      return;
+    }
     if (categories.some((cat) => cat.name.toLowerCase() === name.toLowerCase())) {
       toast.error("Bu kategoriya allaqachon mavjud!");
       return;
@@ -138,13 +167,15 @@ export const AppProvider = ({ children }) => {
   };
 
   const updateCategory = (id, name) => {
-    // Check if category name already exists
+    if (!name || name.trim().length < 2) {
+      toast.error("Kategoriya nomi kamida 2 harfdan iborat bo'lishi kerak!");
+      return;
+    }
     if (categories.some((cat) => cat.id !== id && cat.name.toLowerCase() === name.toLowerCase())) {
       toast.error("Bu kategoriya nomi allaqachon mavjud!");
       return;
     }
     setCategories(categories.map((cat) => (cat.id === id ? { ...cat, name } : cat)));
-    // Update menu items with the old category name to the new one
     setMenu(
       menu.map((item) =>
         item.category === categories.find((cat) => cat.id === id).name
@@ -157,7 +188,6 @@ export const AppProvider = ({ children }) => {
 
   const deleteCategory = (id) => {
     const category = categories.find((cat) => cat.id === id);
-    // Prevent deletion if category is used in menu
     if (menu.some((item) => item.category === category.name)) {
       toast.error("Bu kategoriyada taomlar mavjud, o'chirib bo'lmaydi!");
       return;
@@ -167,7 +197,10 @@ export const AppProvider = ({ children }) => {
   };
 
   const addTable = (name) => {
-    // Check if table name already exists
+    if (!name || name.trim().length < 2) {
+      toast.error("Stol nomi kamida 2 harfdan iborat bo'lishi kerak!");
+      return;
+    }
     if (tables.some((table) => table.name.toLowerCase() === name.toLowerCase())) {
       toast.error("Bu stol nomi allaqachon mavjud!");
       return;
@@ -177,7 +210,6 @@ export const AppProvider = ({ children }) => {
   };
 
   const deleteTable = (id) => {
-    // Prevent deletion if table has active orders
     const table = tables.find((t) => t.id === id);
     if (table.orders.length > 0) {
       toast.error("Bu stolda faol buyurtmalar mavjud, o'chirib bo'lmaydi!");
@@ -188,6 +220,10 @@ export const AppProvider = ({ children }) => {
   };
 
   const updateTableWaiter = (id, waiter) => {
+    if (!waiter || waiter.trim().length < 2) {
+      toast.error("Ofitsiant ismi kamida 2 harfdan iborat bo'lishi kerak!");
+      return;
+    }
     setTables(tables.map((table) => (table.id === id ? { ...table, waiter } : table)));
     toast.success("Ofitsiant muvaffaqiyatli yangilandi!");
   };
@@ -201,6 +237,10 @@ export const AppProvider = ({ children }) => {
       toast.error("Iltimos, avval stol tanlang!");
       return;
     }
+    if (!item.id || !item.name || !item.price) {
+      toast.error("Noto'g'ri taom ma'lumotlari!");
+      return;
+    }
 
     setTables((prev) =>
       prev.map((t) => {
@@ -212,7 +252,10 @@ export const AppProvider = ({ children }) => {
             newOrders[existingItemIndex].quantity += 1;
           } else {
             const menuItem = menu.find((m) => m.id === item.id);
-            newOrders = [...t.orders, { ...item, quantity: 1, category: menuItem?.category || "Other" }];
+            newOrders = [
+              ...t.orders,
+              { ...item, quantity: 1, category: menuItem?.category || "Other", comment: "" },
+            ];
           }
           return {
             ...t,
@@ -226,12 +269,21 @@ export const AppProvider = ({ children }) => {
     toast.success("Buyurtma qo'shildi!");
   };
 
-  const updateOrder = (tableId, index, quantity) => {
+  const updateOrder = (tableId, index, quantity, comment = "") => {
+    if (quantity < 1) {
+      toast.error("Miqdor 1 dan kam bo'lmasligi kerak!");
+      return;
+    }
+    if (comment && comment.trim().length < 3) {
+      toast.error("Izoh kamida 3 harfdan iborat bo'lishi kerak!");
+      return;
+    }
+    const formattedComment = comment.trim().endsWith(".") ? comment.trim() : comment.trim() + ".";
     setTables((prev) =>
       prev.map((table) => {
         if (table.id === tableId) {
           const newOrders = [...table.orders];
-          newOrders[index].quantity = quantity;
+          newOrders[index] = { ...newOrders[index], quantity, comment: formattedComment };
           return {
             ...table,
             orders: newOrders,
@@ -269,8 +321,9 @@ export const AppProvider = ({ children }) => {
     setSentOrders((prev) => {
       const updated = { ...prev };
       if (updated[tableId]) {
-        updated[tableId] = updated[tableId].filter((order) => 
-          !(order.id === removedItem.id && order.quantity === removedItem.quantity)
+        updated[tableId] = updated[tableId].filter(
+          (order) =>
+            !(order.id === removedItem.id && order.quantity === removedItem.quantity)
         );
         if (updated[tableId].length === 0) delete updated[tableId];
       }
@@ -294,12 +347,16 @@ export const AppProvider = ({ children }) => {
           text: text.slice(0, 4096),
           parse_mode: "HTML",
           ...options,
-        }
+        },
+        { timeout: 5000 }
       );
       return response.data.result.message_id;
     } catch (error) {
       console.error("Telegram xabarni yuborishda xato:", error.response?.data || error.message);
-      toast.error("Telegram xabarni yuborib bo'lmadi: " + (error.response?.data?.description || error.message));
+      toast.error(
+        "Telegram xabarni yuborib bo'lmadi: " +
+          (error.response?.data?.description || error.message)
+      );
       throw error;
     }
   };
@@ -313,11 +370,15 @@ export const AppProvider = ({ children }) => {
           message_id: messageId,
           text: text.slice(0, 4096),
           parse_mode: "HTML",
-        }
+        },
+        { timeout: 5000 }
       );
     } catch (error) {
       console.error("Telegram xabarni tahrirlashda xato:", error.response?.data || error.message);
-      toast.error("Telegram xabarni tahrirlashda xato: " + (error.response?.data?.description || error.message));
+      toast.error(
+        "Telegram xabarni tahrirlashda xato: " +
+          (error.response?.data?.description || error.message)
+      );
     }
   };
 
@@ -330,7 +391,10 @@ export const AppProvider = ({ children }) => {
 
     const sentForTable = sentOrders[tableId] || [];
     const newOrders = table.orders.filter(
-      (order) => !sentForTable.some((sent) => sent.id === order.id && sent.quantity === order.quantity)
+      (order) =>
+        !sentForTable.some(
+          (sent) => sent.id === order.id && sent.quantity === order.quantity
+        )
     );
 
     if (newOrders.length === 0 && table.status === "Tayyorlashga yuborildi") {
@@ -338,62 +402,66 @@ export const AppProvider = ({ children }) => {
       return false;
     }
 
-    const barItems = newOrders.filter((item) => item.category === "Ichimlik");
-    const saladItems = newOrders.filter((item) => item.category === "Salat");
-    const kitchenItems = newOrders.filter(
-      (item) => item.category === "Asosiy taom" || item.category === "Desert" || item.category === "Other"
-    );
-
-    const formatItemsList = (items) =>
-      items.length
-        ? items
-            .map((item) => `- ${item.name} x ${item.quantity} (${formatPrice(item.price * item.quantity)})`)
-            .join("\n")
-        : "Buyurtmalar yo'q";
-
     try {
+      // Send orders to respective groups without prices
+      const barItems = newOrders.filter((item) => item.category === "Ichimlik");
+      const saladItems = newOrders.filter((item) => item.category === "Salat");
+      const kitchenItems = newOrders.filter(
+        (item) =>
+          item.category === "Asosiy taom" ||
+          item.category === "Desert" ||
+          item.category === "Other"
+      );
+
       if (barItems.length > 0) {
+        const { itemList, comments } = formatItemsList(barItems);
         const barMessage = `
-<b>🍹 Bar uchun yangi buyurtma - ${table.name} (ID: ${table.id})</b>
-📝 Ro'yxat:
-${formatItemsList(barItems)}
-👨‍🍳 Ofitsiant: ${table.waiter || "Belgilanmagan"}
-🕒 Vaqt: ${new Date().toLocaleString("uz-UZ")}
+<b>🍹 Bar uchun yangi buyurtma</b>
+<b>🍽️ Stol:</b> ${table.name} (ID: ${table.id})
+<b>📋 Buyurtmalar:</b>
+${itemList}${comments}
+<b>👨‍🍳 Ofitsiant:</b> ${table.waiter || "Belgilanmagan"}
+<b>🕒 Vaqt:</b> ${new Date().toLocaleString("uz-UZ")}
         `;
         await sendTelegramMessage(barMessage, BAR_CHAT_ID);
       }
 
       if (saladItems.length > 0) {
+        const { itemList, comments } = formatItemsList(saladItems);
         const saladMessage = `
-<b>🥗 Salatchilar uchun yangi buyurtma - ${table.name} (ID: ${table.id})</b>
-📝 Ro'yxat:
-${formatItemsList(saladItems)}
-👨‍🍳 Ofitsiant: ${table.waiter || "Belgilanmagan"}
-🕒 Vaqt: ${new Date().toLocaleString("uz-UZ")}
+<b>🥗 Salatchilar uchun yangi buyurtma</b>
+<b>🍽️ Stol:</b> ${table.name} (ID: ${table.id})
+<b>📋 Buyurtmalar:</b>
+${itemList}${comments}
+<b>👨‍🍳 Ofitsiant:</b> ${table.waiter || "Belgilanmagan"}
+<b>🕒 Vaqt:</b> ${new Date().toLocaleString("uz-UZ")}
         `;
         await sendTelegramMessage(saladMessage, SALATCHILAR_CHAT_ID);
       }
 
       if (kitchenItems.length > 0) {
+        const { itemList, comments } = formatItemsList(kitchenItems);
         const kitchenMessage = `
-<b>🍲 Oshxona uchun yangi buyurtma - ${table.name} (ID: ${table.id})</b>
-📝 Ro'yxat:
-${formatItemsList(kitchenItems)}
-👨‍🍳 Ofitsiant: ${table.waiter || "Belgilanmagan"}
-🕒 Vaqt: ${new Date().toLocaleString("uz-UZ")}
+<b>🍲 Oshxona uchun yangi buyurtma</b>
+<b>🍽️ Stol:</b> ${table.name} (ID: ${table.id})
+<b>📋 Buyurtmalar:</b>
+${itemList}${comments}
+<b>👨‍🍳 Ofitsiant:</b> ${table.waiter || "Belgilanmagan"}
+<b>🕒 Vaqt:</b> ${new Date().toLocaleString("uz-UZ")}
         `;
         await sendTelegramMessage(kitchenMessage, OSHXONA_CHAT_ID);
       }
 
-      const total = table.orders.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      // Send full order to main reporting group without prices
+      const { itemList, comments } = formatItemsList(table.orders);
       const fullMessage = `
-<b>📋 Umumiy buyurtma yangilandi - ${table.name} (ID: ${table.id})</b>
-📝 Ro'yxat:
-${formatItemsList(table.orders)}
-💵 Jami: ${formatPrice(total)}
-👨‍🍳 Ofitsiant: ${table.waiter || "Belgilanmagan"}
-🕒 Vaqt: ${new Date().toLocaleString("uz-UZ")}
-📌 Status: Tayyorlashga yuborildi
+<b>📋 Yangi buyurtma</b>
+<b>🍽️ Stol:</b> ${table.name} (ID: ${table.id})
+<b>📋 Buyurtmalar:</b>
+${itemList}${comments}
+<b>👨‍🍳 Ofitsiant:</b> ${table.waiter || "Belgilanmagan"}
+<b>🕒 Vaqt:</b> ${new Date().toLocaleString("uz-UZ")}
+<b>📌 Status:</b> Tayyorlashga yuborildi
       `;
       await sendTelegramMessage(fullMessage, MAIN_REPORTING_CHAT_ID);
 
@@ -403,7 +471,9 @@ ${formatItemsList(table.orders)}
       }));
 
       setTables((prev) =>
-        prev.map((t) => (t.id === tableId ? { ...t, status: "Tayyorlashga yuborildi" } : t))
+        prev.map((t) =>
+          t.id === tableId ? { ...t, status: "Tayyorlashga yuborildi" } : t
+        )
       );
       toast.success("Buyurtmalar tayyorlashga yuborildi!");
       return true;
@@ -420,7 +490,10 @@ ${formatItemsList(table.orders)}
       return false;
     }
 
-    const total = table.orders.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const total = table.orders.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
     const newOrder = {
       id: Date.now(),
       items: [...table.orders],
@@ -449,16 +522,20 @@ ${formatItemsList(table.orders)}
     setSelectedTableId(null);
 
     try {
+      // Send completion message to main reporting group without prices
+      const { itemList, comments } = formatItemsList(table.orders);
       const completionMessage = `
-<b>✅ Buyurtma Yakunlandi - ${table.name} (ID: ${table.id})</b>
-💵 Jami: ${formatPrice(total)}
-📌 To'lov holati: ${paymentConfirmed ? "To'langan" : "To'lov kutilmoqda"}
-👨‍🍳 Ofitsiant: ${table.waiter || "Belgilanmagan"}
-🕒 Vaqt: ${new Date().toLocaleString("uz-UZ")}
-    `;
+<b>✅ Buyurtma yakunlandi</b>
+<b>🍽️ Stol:</b> ${table.name} (ID: ${table.id})
+<b>📋 Buyurtmalar:</b>
+${itemList}${comments}
+<b>📌 To'lov holati:</b> ${paymentConfirmed ? "To'langan" : "To'lov kutilmoqda"}
+<b>👨‍🍳 Ofitsiant:</b> ${table.waiter || "Belgilanmagan"}
+<b>🕒 Vaqt:</b> ${new Date().toLocaleString("uz-UZ")}
+      `;
       await sendTelegramMessage(completionMessage, MAIN_REPORTING_CHAT_ID);
 
-      // Daily report yangilash
+      // Generate and update daily report
       const today = new Date().toLocaleDateString("uz-UZ");
       const todayOrders = newOrdersHistory.filter(
         (order) => new Date(order.date).toLocaleDateString("uz-UZ") === today
@@ -466,17 +543,16 @@ ${formatItemsList(table.orders)}
 
       const ordersCount = todayOrders.length;
       const totalRevenue = todayOrders.reduce((sum, order) => sum + order.total, 0);
-      
-      // Eng ko'p sotilgan mahsulotlarni hisoblash
+
       const itemSales = {};
-      todayOrders.forEach(order => {
-        order.items.forEach(item => {
+      todayOrders.forEach((order) => {
+        order.items.forEach((item) => {
           if (!itemSales[item.id]) {
             itemSales[item.id] = {
               name: item.name,
               count: 0,
               totalQuantity: 0,
-              price: item.price
+              price: item.price,
             };
           }
           itemSales[item.id].count += 1;
@@ -487,51 +563,83 @@ ${formatItemsList(table.orders)}
       const bestSellers = Object.values(itemSales)
         .sort((a, b) => b.totalQuantity - a.totalQuantity)
         .slice(0, 3)
-        .map(item => ({
+        .map((item) => ({
           name: item.name,
           count: item.totalQuantity,
-          total: item.totalQuantity * item.price
+          total: item.totalQuantity * item.price,
         }));
 
       setDailyReport({ ordersCount, totalRevenue, bestSellers });
 
+      // Format item sales for all items
+      const allItemSalesText = Object.values(itemSales)
+        .sort((a, b) => b.totalQuantity - a.totalQuantity)
+        .map(
+          (item, index) =>
+            `${index + 1}. ${item.name} - ${item.totalQuantity} marta`
+        )
+        .join("\n");
+
       const orderDetailsText = todayOrders
         .map((order, index) => {
-          const itemsList = order.items
-            .map((item) => `- ${item.name} x ${item.quantity} = ${formatPrice(item.price * item.quantity)}`)
-            .join("\n");
-          const debtInfo = order.status === "Qarz" && order.debtDetails
-            ? `\nQarz ma'lumotlari:\n- Summa: ${formatPrice(order.debtDetails.amount)}\n- Qarzdor: ${order.debtDetails.debtorName}\n- Manzil: ${order.debtDetails.debtorAddress}\n- To'lov sanasi: ${new Date(order.debtDetails.repaymentDate).toLocaleDateString("uz-UZ")}`
-            : "";
-          return `<b>Buyurtma #${index + 1}</b>\n` +
-                 `📅 Sana: ${new Date(order.date).toLocaleString("uz-UZ")}\n` +
-                 `🍽️ Stol: ${order.tableName} (ID: ${order.tableId})\n` +
-                 `👨‍🍳 Ofitsiant: ${order.waiter || "Belgilanmagan"}\n` +
-                 `📝 Buyurtma:\n${itemsList}\n` +
-                 `💵 Jami: ${formatPrice(order.total)}\n` +
-                 `📌 Status: ${order.status}${debtInfo}\n`;
+          const { itemList, comments } = formatItemsList(order.items);
+          const debtInfo =
+            order.status === "Qarz" && order.debtDetails
+              ? `
+<b>💳 Qarz ma'lumotlari:</b>
+  • Summa: ${formatPrice(order.debtDetails.amount)}
+  • Qarzdor: ${order.debtDetails.debtorName}
+  • Manzil: ${order.debtDetails.debtorAddress}
+  • To'lov sanasi: ${new Date(
+    order.debtDetails.repaymentDate
+  ).toLocaleDateString("uz-UZ")}`
+              : "";
+          return `
+<b>Buyurtma #${index + 1}</b>
+<b>📅 Sana:</b> ${new Date(order.date).toLocaleString("uz-UZ")}
+<b>🍽️ Stol:</b> ${order.tableName} (ID: ${order.tableId})
+<b>👨‍🍳 Ofitsiant:</b> ${order.waiter || "Belgilanmagan"}
+<b>📋 Buyurtmalar:</b>
+${itemList}${comments}
+<b>📌 Status:</b> ${order.status}${debtInfo}
+          `;
         })
-        .join("\n");
+        .join("\n\n");
 
-      const bestSellersText = bestSellers
-        .map((item, index) => `${index + 1}. ${item.name} - ${item.count} marta (${formatPrice(item.total)})`)
-        .join("\n");
-
-      const reportText =
-        `<b>📊 Sodiqjon Restorani - Bugungi hisobot (${today}):</b>\n` +
-        `📌 Buyurtmalar soni: ${ordersCount}\n` +
-        `💰 Umumiy daromad: ${formatPrice(totalRevenue)}\n\n` +
-        `<b>🏆 Eng ko'p sotilganlar:</b>\n${bestSellersText || "Hozircha ma'lumot yo'q"}\n\n` +
-        `<b>📋 Buyurtma tafsilotlari:</b>\n${orderDetailsText || "Hozircha buyurtma yo'q"}`;
+      const reportText = `
+<b>📊 Sodiqjon Restorani - Bugungi hisobot (${today})</b>
+<pre>-----------------------------------</pre>
+<b>📌 Buyurtmalar soni:</b> ${ordersCount}
+<b>💰 Umumiy daromad:</b> ${formatPrice(totalRevenue)}
+<pre>-----------------------------------</pre>
+<b>🏆 Eng ko'p sotilgan taomlar:</b>
+${bestSellers
+  .map(
+    (item, index) =>
+      `${index + 1}. ${item.name} - ${item.count} marta`
+  )
+  .join("\n") || "Hozircha ma'lumot yo'q"}
+<pre>-----------------------------------</pre>
+<b>🍽️ Barcha sotilgan taomlar:</b>
+${allItemSalesText || "Hozircha ma'lumot yo'q"}
+<pre>-----------------------------------</pre>
+<b>📋 Buyurtma tafsilotlari:</b>
+${orderDetailsText || "Hozircha buyurtma yo'q"}
+      `;
 
       const isSameDay = lastMessageDate === today;
 
-      if (!lastMessageId || !isSameDay) {
-        const messageId = await sendTelegramMessage(reportText, MAIN_REPORTING_CHAT_ID);
-        setLastMessageId(messageId);
-        setLastMessageDate(today);
-      } else {
-        await editTelegramMessage(lastMessageId, reportText);
+      try {
+        if (!lastMessageId || !isSameDay) {
+          const messageId = await sendTelegramMessage(reportText, MAIN_REPORTING_CHAT_ID);
+          setLastMessageId(messageId);
+          setLastMessageDate(today);
+        } else {
+          await editTelegramMessage(lastMessageId, reportText);
+        }
+      } catch (error) {
+        console.error("Hisobot yuborishda xato:", error);
+        toast.error("Hisobot yuborishda xato: " + error.message);
       }
 
       toast.success("Buyurtma yakunlandi!");
@@ -542,7 +650,12 @@ ${formatItemsList(table.orders)}
     }
   };
 
-  const confirmPayment = (tableId) => {
+  const confirmPayment = async (tableId) => {
+    const table = tables.find((t) => t.id === tableId);
+    if (!table || table.status !== "To'lov kutilmoqda") {
+      toast.error("To'lov tasdiqlash uchun buyurtma mavjud emas!");
+      return;
+    }
     setTables((prev) =>
       prev.map((t) =>
         t.id === tableId ? { ...t, status: "Bo'sh", orders: [] } : t
@@ -555,10 +668,134 @@ ${formatItemsList(table.orders)}
           : order
       )
     );
-    toast.success("To'lov tasdiqlandi!");
+
+    try {
+      // Update daily report after payment confirmation
+      const today = new Date().toLocaleDateString("uz-UZ");
+      const todayOrders = ordersHistory
+        .map((order) =>
+          order.tableId === tableId && order.status === "To'lov kutilmoqda"
+            ? { ...order, status: "To'lov qilindi" }
+            : order
+        )
+        .filter((order) => new Date(order.date).toLocaleDateString("uz-UZ") === today);
+
+      const ordersCount = todayOrders.length;
+      const totalRevenue = todayOrders.reduce((sum, order) => sum + order.total, 0);
+
+      const itemSales = {};
+      todayOrders.forEach((order) => {
+        order.items.forEach((item) => {
+          if (!itemSales[item.id]) {
+            itemSales[item.id] = {
+              name: item.name,
+              count: 0,
+              totalQuantity: 0,
+              price: item.price,
+            };
+          }
+          itemSales[item.id].count += 1;
+          itemSales[item.id].totalQuantity += item.quantity;
+        });
+      });
+
+      const bestSellers = Object.values(itemSales)
+        .sort((a, b) => b.totalQuantity - a.totalQuantity)
+        .slice(0, 3)
+        .map((item) => ({
+          name: item.name,
+          count: item.totalQuantity,
+          total: item.totalQuantity * item.price,
+        }));
+
+      setDailyReport({ ordersCount, totalRevenue, bestSellers });
+
+      const allItemSalesText = Object.values(itemSales)
+        .sort((a, b) => b.totalQuantity - a.totalQuantity)
+        .map(
+          (item, index) =>
+            `${index + 1}. ${item.name} - ${item.totalQuantity} marta`
+        )
+        .join("\n");
+
+      const orderDetailsText = todayOrders
+        .map((order, index) => {
+          const { itemList, comments } = formatItemsList(order.items);
+          const debtInfo =
+            order.status === "Qarz" && order.debtDetails
+              ? `
+<b>💳 Qarz ma'lumotlari:</b>
+  • Summa: ${formatPrice(order.debtDetails.amount)}
+  • Qarzdor: ${order.debtDetails.debtorName}
+  • Manzil: ${order.debtDetails.debtorAddress}
+  • To'lov sanasi: ${new Date(
+    order.debtDetails.repaymentDate
+  ).toLocaleDateString("uz-UZ")}`
+              : "";
+          return `
+<b>Buyurtma #${index + 1}</b>
+<b>📅 Sana:</b> ${new Date(order.date).toLocaleString("uz-UZ")}
+<b>🍽️ Stol:</b> ${order.tableName} (ID: ${order.tableId})
+<b>👨‍🍳 Ofitsiant:</b> ${order.waiter || "Belgilanmagan"}
+<b>📋 Buyurtmalar:</b>
+${itemList}${comments}
+<b>📌 Status:</b> ${order.status}${debtInfo}
+          `;
+        })
+        .join("\n\n");
+
+      const reportText = `
+<b>📊 Sodiqjon Restorani - Bugungi hisobot (${today})</b>
+<pre>-----------------------------------</pre>
+<b>📌 Buyurtmalar soni:</b> ${ordersCount}
+<b>💰 Umumiy daromad:</b> ${formatPrice(totalRevenue)}
+<pre>-----------------------------------</pre>
+<b>🏆 Eng ko'p sotilgan taomlar:</b>
+${bestSellers
+  .map(
+    (item, index) =>
+      `${index + 1}. ${item.name} - ${item.count} marta`
+  )
+  .join("\n") || "Hozircha ma'lumot yo'q"}
+<pre>-----------------------------------</pre>
+<b>🍽️ Barcha sotilgan taomlar:</b>
+${allItemSalesText || "Hozircha ma'lumot yo'q"}
+<pre>-----------------------------------</pre>
+<b>📋 Buyurtma tafsilotlari:</b>
+${orderDetailsText || "Hozircha buyurtma yo'q"}
+      `;
+
+      const isSameDay = lastMessageDate === today;
+
+      try {
+        if (!lastMessageId || !isSameDay) {
+          const messageId = await sendTelegramMessage(reportText, MAIN_REPORTING_CHAT_ID);
+          setLastMessageId(messageId);
+          setLastMessageDate(today);
+        } else {
+          await editTelegramMessage(lastMessageId, reportText);
+        }
+      } catch (error) {
+        console.error("Hisobot yuborishda xato:", error);
+        toast.error("Hisobot yuborishda xato: " + error.message);
+      }
+
+      toast.success("To'lov tasdiqlandi!");
+    } catch (error) {
+      toast.error("Hisobot yangilashda xato: " + error.message);
+    }
   };
 
   const markAsDebt = async (tableId, debtDetails) => {
+    if (
+      !debtDetails.amount ||
+      !debtDetails.debtorName ||
+      !debtDetails.debtorAddress ||
+      !debtDetails.repaymentDate
+    ) {
+      toast.error("Qarz ma'lumotlari to'liq kiritilmadi!");
+      return;
+    }
     setOrdersHistory((prev) =>
       prev.map((order) =>
         order.tableId === tableId && order.status === "To'lov kutilmoqda"
@@ -578,17 +815,136 @@ ${formatItemsList(table.orders)}
         (o) => o.tableId === tableId && o.status === "To'lov kutilmoqda"
       );
       if (order) {
+        const { itemList, comments } = formatItemsList(order.items);
         const debtMessage = `
-<b>💳 Qarz sifatida belgilandi - ${table.name} (ID: ${table.id})</b>
-💵 Summa: ${formatPrice(debtDetails.amount)}
-👤 Qarzdor: ${debtDetails.debtorName}
-🏠 Manzil: ${debtDetails.debtorAddress}
-📅 To'lov sanasi: ${new Date(debtDetails.repaymentDate).toLocaleDateString("uz-UZ")}
-👨‍🍳 Ofitsiant: ${table.waiter || "Belgilanmagan"}
-🕒 Vaqt: ${new Date().toLocaleString("uz-UZ")}
+<b>💳 Qarz sifatida belgilandi</b>
+<b>🍽️ Stol:</b> ${table.name} (ID: ${table.id})
+<b>📋 Buyurtmalar:</b>
+${itemList}${comments}
+<b>💵 Summa:</b> ${formatPrice(debtDetails.amount)}
+<b>👤 Qarzdor:</b> ${debtDetails.debtorName}
+<b>🏠 Manzil:</b> ${debtDetails.debtorAddress}
+<b>📅 To'lov sanasi:</b> ${new Date(
+          debtDetails.repaymentDate
+        ).toLocaleDateString("uz-UZ")}
+<b>👨‍🍳 Ofitsiant:</b> ${table.waiter || "Belgilanmagan"}
+<b>🕒 Vaqt:</b> ${new Date().toLocaleString("uz-UZ")}
         `;
         await sendTelegramMessage(debtMessage, MAIN_REPORTING_CHAT_ID);
+
+        // Update daily report after marking as debt
+        const today = new Date().toLocaleDateString("uz-UZ");
+        const todayOrders = ordersHistory
+          .map((o) =>
+            o.tableId === tableId && o.status === "To'lov kutilmoqda"
+              ? { ...o, status: "Qarz", debtDetails }
+              : o
+          )
+          .filter((order) => new Date(order.date).toLocaleDateString("uz-UZ") === today);
+
+        const ordersCount = todayOrders.length;
+        const totalRevenue = todayOrders.reduce((sum, order) => sum + order.total, 0);
+
+        const itemSales = {};
+        todayOrders.forEach((order) => {
+          order.items.forEach((item) => {
+            if (!itemSales[item.id]) {
+              itemSales[item.id] = {
+                name: item.name,
+                count: 0,
+                totalQuantity: 0,
+                price: item.price,
+              };
+            }
+            itemSales[item.id].count += 1;
+            itemSales[item.id].totalQuantity += item.quantity;
+          });
+        });
+
+        const bestSellers = Object.values(itemSales)
+          .sort((a, b) => b.totalQuantity - a.totalQuantity)
+          .slice(0, 3)
+          .map((item) => ({
+            name: item.name,
+            count: item.totalQuantity,
+            total: item.totalQuantity * item.price,
+          }));
+
+        setDailyReport({ ordersCount, totalRevenue, bestSellers });
+
+        const allItemSalesText = Object.values(itemSales)
+          .sort((a, b) => b.totalQuantity - a.totalQuantity)
+          .map(
+            (item, index) =>
+              `${index + 1}. ${item.name} - ${item.totalQuantity} marta`
+          )
+          .join("\n");
+
+        const orderDetailsText = todayOrders
+          .map((order, index) => {
+            const { itemList, comments } = formatItemsList(order.items);
+            const debtInfo =
+              order.status === "Qarz" && order.debtDetails
+                ? `
+<b>💳 Qarz ma'lumotlari:</b>
+  • Summa: ${formatPrice(order.debtDetails.amount)}
+  • Qarzdor: ${order.debtDetails.debtorName}
+  • Manzil: ${order.debtDetails.debtorAddress}
+  • To'lov sanasi: ${new Date(
+    order.debtDetails.repaymentDate
+  ).toLocaleDateString("uz-UZ")}`
+                : "";
+            return `
+<b>Buyurtma #${index + 1}</b>
+<b>📅 Sana:</b> ${new Date(order.date).toLocaleString("uz-UZ")}
+<b>🍽️ Stol:</b> ${order.tableName} (ID: ${order.tableId})
+<b>👨‍🍳 Ofitsiant:</b> ${order.waiter || "Belgilanmagan"}
+<b>📋 Buyurtmalar:</b>
+${itemList}${comments}
+<b>📌 Status:</b> ${order.status}${debtInfo}
+            `;
+          })
+          .join("\n\n");
+
+        const reportText = `
+<b>📊 Sodiqjon Restorani - Bugungi hisobot (${today})</b>
+<pre>-----------------------------------</pre>
+<b>📌 Buyurtmalar soni:</b> ${ordersCount}
+<b>💰 Umumiy daromad:</b> ${formatPrice(totalRevenue)}
+<pre>-----------------------------------</pre>
+<b>🏆 Eng ko'p sotilgan taomlar:</b>
+${bestSellers
+  .map(
+    (item, index) =>
+      `${index + 1}. ${item.name} - ${item.count} marta`
+  )
+  .join("\n") || "Hozircha ma'lumot yo'q"}
+<pre>-----------------------------------</pre>
+<b>🍽️ Barcha sotilgan taomlar:</b>
+${allItemSalesText || "Hozircha ma'lumot yo'q"}
+<pre>-----------------------------------</pre>
+<b>📋 Buyurtma tafsilotlari:</b>
+${orderDetailsText || "Hozircha buyurtma yo'q"}
+        `;
+
+        const isSameDay = lastMessageDate === today;
+
+        try {
+          if (!lastMessageId || !isSameDay) {
+            const messageId = await sendTelegramMessage(reportText, MAIN_REPORTING_CHAT_ID);
+            setLastMessageId(messageId);
+            setLastMessageDate(today);
+          } else {
+            await editTelegramMessage(lastMessageId, reportText);
+          }
+        } catch (error) {
+          console.error("Hisobot yuborishda xato:", error);
+          toast.error("Hisobot yuborishda xato: " + error.message);
+        }
+
         toast.success("Buyurtma qarz sifatida belgilandi!");
+      } else {
+        toast.error("Qarz sifatida belgilash uchun buyurtma topilmadi!");
       }
     } catch (error) {
       toast.error("Qarzni yuborishda xato: " + error.message);
@@ -619,7 +975,7 @@ ${formatItemsList(table.orders)}
   const generateReceiptPDF = (order) => {
     try {
       const doc = new jsPDF();
-      doc.setFontSize(14);
+      doc.setFontSize(16);
       doc.text("Sodiqjon Restorani - Chek", 10, 10);
       doc.setFontSize(12);
       doc.text(`Stol: ${order.tableName} (ID: ${order.tableId})`, 10, 20);
@@ -629,10 +985,16 @@ ${formatItemsList(table.orders)}
       let y = 60;
       order.items.forEach((item) => {
         doc.text(
-          `- ${item.name} x ${item.quantity} = ${formatPrice(item.price * item.quantity)}`,
+          `  • ${item.name} x${item.quantity} = ${formatPrice(
+            item.price * item.quantity
+          )}`,
           10,
           y
         );
+        if (item.comment && item.comment.trim().length > 2) {
+          y += 10;
+          doc.text(`    Izoh: ${item.comment}`, 10, y);
+        }
         y += 10;
       });
       doc.text(`Jami: ${formatPrice(order.total)}`, 10, y);
@@ -642,14 +1004,16 @@ ${formatItemsList(table.orders)}
         y += 10;
         doc.text("Qarz ma'lumotlari:", 10, y);
         y += 10;
-        doc.text(`- Summa: ${formatPrice(order.debtDetails.amount)}`, 10, y);
+        doc.text(`  • Summa: ${formatPrice(order.debtDetails.amount)}`, 10, y);
         y += 10;
-        doc.text(`- Qarzdor: ${order.debtDetails.debtorName}`, 10, y);
+        doc.text(`  • Qarzdor: ${order.debtDetails.debtorName}`, 10, y);
         y += 10;
-        doc.text(`- Manzil: ${order.debtDetails.debtorAddress}`, 10, y);
+        doc.text(`  • Manzil: ${order.debtDetails.debtorAddress}`, 10, y);
         y += 10;
         doc.text(
-          `- To'lov sanasi: ${new Date(order.debtDetails.repaymentDate).toLocaleDateString("uz-UZ")}`,
+          `  • To'lov sanasi: ${new Date(
+            order.debtDetails.repaymentDate
+          ).toLocaleDateString("uz-UZ")}`,
           10,
           y
         );

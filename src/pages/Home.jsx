@@ -35,7 +35,6 @@ const formatPrice = (price) => {
   }).format(price);
 };
 
-// PaymentModal with debt marking
 const PaymentModal = ({ tableId, onClose, sendToTelegram, completeOrder, generateReceiptPDF, markAsDebt, confirmPayment }) => {
   const { tables, ordersHistory } = useContext(AppContext);
   const selectedTable = tables.find((table) => table.id === tableId) || { orders: [], name: "-" };
@@ -59,7 +58,7 @@ const PaymentModal = ({ tableId, onClose, sendToTelegram, completeOrder, generat
       return;
     }
     try {
-      await completeOrder(tableId); // Move to ordersHistory with "To'lov kutilmoqda"
+      await completeOrder(tableId);
       await markAsDebt(tableId, debtDetails);
       toast.success("Buyurtma qarz sifatida belgilandi!");
       setShowDebtForm(false);
@@ -93,7 +92,7 @@ const PaymentModal = ({ tableId, onClose, sendToTelegram, completeOrder, generat
 
   const handleConfirmPayment = async () => {
     try {
-      await completeOrder(tableId, true); // Complete with payment confirmed
+      await completeOrder(tableId, true);
       toast.success("To'lov tasdiqlandi!");
       onClose();
     } catch (error) {
@@ -102,7 +101,7 @@ const PaymentModal = ({ tableId, onClose, sendToTelegram, completeOrder, generat
   };
 
   return (
-    <div className=" payment-modal">
+    <div className="payment-modal">
       <div className="payment-modal-content">
         <button className="modal-close" onClick={onClose}>
           <FaTimes />
@@ -224,7 +223,6 @@ const PaymentModal = ({ tableId, onClose, sendToTelegram, completeOrder, generat
   );
 };
 
-// MessageModal with toast notifications
 const MessageModal = ({ onClose, sendTelegramMessage }) => {
   const [recipient, setRecipient] = useState("kitchen");
   const [message, setMessage] = useState("");
@@ -342,12 +340,10 @@ export default function Home() {
   const ordersRef = useRef(null);
   const menuRef = useRef(null);
 
-  // Scroll function
   const scrollToSection = (ref) => {
     ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  // Update clock
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date().toLocaleTimeString("uz-UZ"));
@@ -355,7 +351,6 @@ export default function Home() {
     return () => clearInterval(timer);
   }, []);
 
-  // Active section observer
   useEffect(() => {
     const sections = [
       { ref: tablesRef, name: "tables" },
@@ -414,7 +409,6 @@ export default function Home() {
     setTimeout(() => scrollToSection(ordersRef), 250);
   };
 
-  // Keyboard support for suggestions and focusing search with '/'
   useEffect(() => {
     const handler = (e) => {
       if (e.key === "/") {
@@ -443,7 +437,6 @@ export default function Home() {
     return () => window.removeEventListener("keydown", handler);
   }, [showSuggestions, highlightedIndex, suggestionItems]);
 
-  // Scroll to orders when selecting a table
   const handleSelectTable = (id) => {
     selectTable(id);
     setTimeout(() => scrollToSection(ordersRef), 200);
@@ -468,8 +461,6 @@ export default function Home() {
 
   return (
     <div className="home-container">
-    
-
       <nav className="section-nav">
         <button
           className={`nav-btn ${activeSection === "tables" ? "active" : ""}`}
