@@ -320,6 +320,7 @@ export default function Home() {
     generateReceiptPDF,
     markAsDebt,
     confirmPayment,
+    sendOrdersToPreparation,
   } = useContext(AppContext);
 
   const [showPayment, setShowPayment] = useState(false);
@@ -442,20 +443,57 @@ export default function Home() {
     setTimeout(() => scrollToSection(ordersRef), 200);
   };
 
+  // YANGILANGAN: Tayyorlashga yuborish funksiyasi
   const sendToTelegram = async (table, orders) => {
+    if (!table || !orders || orders.length === 0) {
+      toast.error("Buyurtma bo'sh!");
+      return;
+    }
+
     const total = orders.reduce((sum, order) => sum + order.price * order.quantity, 0);
-    const message = `<b>🛒 Yangi buyurtma: ${table.name}</b>\n📅 Sana: ${new Date().toLocaleString("uz-UZ")}\n📋 Buyurtmalar:\n${orders
-      .map(
-        (order) =>
-          `- ${order.name} x ${order.quantity} (${formatPrice(order.price * order.quantity)})`
-      )
-      .join("\n")}\n💵 Jami: ${formatPrice(total)}\n👨‍🍳 Ofitsiant: ${table.waiter || "Belgilanmagan"}`;
+    
+    // Yangi buyurtma ID yaratish
+    const orderId = `ORD${Date.now().toString().slice(-6)}`;
+    
+    const message = `
+🆕 <b>YANGI BUYURTMA</b>
+📋 <b>Buyurtma ID:</b> ${orderId}
+🍽️ <b>Stol:</b> ${table.name}
+👨‍🍳 <b>Ofitsiant:</b> ${table.waiter || "Belgilanmagan"}
+🕒 <b>Vaqt:</b> ${new Date().toLocaleString("uz-UZ")}
+💰 <b>Jami:</b> ${formatPrice(total)}
+
+<b>📋 Buyurtmalar:</b>
+${orders.map(order => 
+  `• ${order.name} x${order.quantity}${order.comment ? ` (${order.comment})` : ''}`
+).join('\n')}
+
+⏳ <b>Status:</b> Kutayotgan
+    `;
 
     try {
+      // Telegramga xabar yuborish
       await sendTelegramMessage(message, "-4646692596");
-      toast.success("Buyurtma Telegramga yuborildi!");
+      
+      // Buyurtmani history ga qo'shamiz "Tayyorlashga yuborildi" statusi bilan
+      const newOrder = {
+        id: Date.now(),
+        orderId: orderId,
+        items: [...orders],
+        total: total,
+        date: new Date(),
+        tableId: table.id,
+        tableName: table.name,
+        waiter: table.waiter,
+        status: "Tayyorlashga yuborildi"
+      };
+      
+      // Context orqali buyurtmani saqlaymiz
+      await sendOrdersToPreparation(table.id);
+      
+      toast.success("✅ Buyurtma Oshxonaga yuborildi!");
     } catch (error) {
-      toast.error("Xatolik yuz berdi: " + (error?.message || error));
+      toast.error("❌ Xatolik yuz berdi: " + (error?.message || error));
     }
   };
 
@@ -544,6 +582,7 @@ export default function Home() {
               <OrderForm
                 tableId={selectedTableId}
                 openPayment={() => setShowPayment(true)}
+                onSendToKitchen={() => sendToTelegram(selectedTable, selectedTable.orders)}
               />
             </>
           ) : (

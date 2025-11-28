@@ -8,9 +8,11 @@ import Reports from "./pages/Reports";
 import AdminPanel from "./pages/AdminPanel";
 import Login from "./pages/Login";
 import DebtManagement from "./pages/DebtManagement";
-import OrdersHistory from "./components/OrderForm"; // New import
+import OrdersHistory from "./components/OrdersHistory";
+import KitchenDashboard from "./components/KitchenDashboard";
+import UserDashboard from "./components/UserDashboard";
 import { AppProvider } from "./context/AppContext";
-
+import "./App.css";
 
 function AppContent() {
   const location = useLocation();
@@ -22,14 +24,27 @@ function AppContent() {
       <div className={isLoginPage ? "" : "app-container"}>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/orders" element={<OrdersHistory />} /> {/* Updated route */}
+          <Route path="/orders" element={<OrdersHistory />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/login" element={<Login />} />
           <Route path="/debts" element={<DebtManagement />} />
+          <Route path="/kitchen" element={<KitchenDashboard />} />
+          <Route path="/user" element={<UserDashboard />} />
         </Routes>
       </div>
-      <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer 
+        position="top-right" 
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </>
   );
 }
@@ -45,3 +60,5 @@ function App() {
 }
 
 export default App;
+
+

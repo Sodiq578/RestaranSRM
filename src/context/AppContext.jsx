@@ -23,6 +23,7 @@ const formatPrice = (price) =>
   }).format(price);
 
 export const AppProvider = ({ children }) => {
+  // Barcha state'lar AppProvider ichida bo'lishi kerak
   const [tables, setTables] = useState(() => {
     const saved = localStorage.getItem("tables");
     return saved
@@ -92,12 +93,19 @@ export const AppProvider = ({ children }) => {
         ];
   });
 
+  // Kitchen orders state'ini qo'shamiz
+  const [kitchenOrders, setKitchenOrders] = useState(() => {
+    const saved = localStorage.getItem("kitchenOrders");
+    return saved ? JSON.parse(saved) : [];
+  });
+
   const TELEGRAM_BOT_TOKEN = "7885205848:AAEcgs2vXjZqyV40f6Jvl8Rj1OMq0r7QGkA";
   const MAIN_REPORTING_CHAT_ID = "-4646692596";
   const BAR_CHAT_ID = "-4646692596";
   const SALATCHILAR_CHAT_ID = "-4753754534";
   const OSHXONA_CHAT_ID = "-4686557731";
 
+  // LocalStorage ga saqlash
   useEffect(() => {
     localStorage.setItem("tables", JSON.stringify(tables));
     localStorage.setItem("categories", JSON.stringify(categories));
@@ -107,7 +115,8 @@ export const AppProvider = ({ children }) => {
     localStorage.setItem("lastMessageId", JSON.stringify(lastMessageId));
     localStorage.setItem("lastMessageDate", JSON.stringify(lastMessageDate));
     localStorage.setItem("sentOrders", JSON.stringify(sentOrders));
-  }, [tables, categories, ordersHistory, menu, dailyReport, lastMessageId, lastMessageDate, sentOrders]);
+    localStorage.setItem("kitchenOrders", JSON.stringify(kitchenOrders));
+  }, [tables, categories, ordersHistory, menu, dailyReport, lastMessageId, lastMessageDate, sentOrders, kitchenOrders]);
 
   // Format items list without prices
   const formatItemsList = (items) => {
@@ -130,6 +139,57 @@ export const AppProvider = ({ children }) => {
     };
   };
 
+  // Telegram xabar yuborish funksiyasi
+  const sendTelegramMessage = async (text, chatId, options = {}) => {
+    if (!text || !chatId) {
+      console.error("Xabar matni yoki chat ID bo'sh:", { text, chatId });
+      toast.error("Xabar matni yoki chat ID bo'sh!");
+      throw new Error("Xabar matni yoki chat ID bo'sh");
+    }
+    try {
+      const response = await axios.post(
+        `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
+        {
+          chat_id: chatId,
+          text: text.slice(0, 4096),
+          parse_mode: "HTML",
+          ...options,
+        },
+        { timeout: 5000 }
+      );
+      return response.data.result.message_id;
+    } catch (error) {
+      console.error("Telegram xabarni yuborishda xato:", error.response?.data || error.message);
+      toast.error(
+        "Telegram xabarni yuborib bo'lmadi: " +
+          (error.response?.data?.description || error.message)
+      );
+      throw error;
+    }
+  };
+
+  const editTelegramMessage = async (messageId, text) => {
+    try {
+      await axios.post(
+        `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageText`,
+        {
+          chat_id: MAIN_REPORTING_CHAT_ID,
+          message_id: messageId,
+          text: text.slice(0, 4096),
+          parse_mode: "HTML",
+        },
+        { timeout: 5000 }
+      );
+    } catch (error) {
+      console.error("Telegram xabarni tahrirlashda xato:", error.response?.data || error.message);
+      toast.error(
+        "Telegram xabarni tahrirlashda xato: " +
+          (error.response?.data?.description || error.message)
+      );
+    }
+  };
+
+  // Menu items functions
   const addMenuItem = (item) => {
     if (!item.name || !item.price || !item.category) {
       toast.error("Iltimos, barcha maydonlarni to'ldiring!");
@@ -153,6 +213,7 @@ export const AppProvider = ({ children }) => {
     toast.success("Taom muvaffaqiyatli o'chirildi!");
   };
 
+  // Category functions
   const addCategory = (name) => {
     if (!name || name.trim().length < 2) {
       toast.error("Kategoriya nomi kamida 2 harfdan iborat bo'lishi kerak!");
@@ -196,6 +257,7 @@ export const AppProvider = ({ children }) => {
     toast.success("Kategoriya muvaffaqiyatli o'chirildi!");
   };
 
+  // Table functions
   const addTable = (name) => {
     if (!name || name.trim().length < 2) {
       toast.error("Stol nomi kamida 2 harfdan iborat bo'lishi kerak!");
@@ -232,6 +294,7 @@ export const AppProvider = ({ children }) => {
     setSelectedTableId(tableId);
   };
 
+  // Order functions
   const addToOrder = (item) => {
     if (!selectedTableId) {
       toast.error("Iltimos, avval stol tanlang!");
@@ -333,53 +396,74 @@ export const AppProvider = ({ children }) => {
     return true;
   };
 
-  const sendTelegramMessage = async (text, chatId, options = {}) => {
-    if (!text || !chatId) {
-      console.error("Xabar matni yoki chat ID bo'sh:", { text, chatId });
-      toast.error("Xabar matni yoki chat ID bo'sh!");
-      throw new Error("Xabar matni yoki chat ID bo'sh");
+  // Kitchen functions - yangi qo'shilgan
+  const startKitchenPreparation = async (orderId) => {
+    const order = ordersHistory.find(o => o.id === orderId);
+    if (!order) {
+      toast.error("Buyurtma topilmadi!");
+      return;
     }
-    try {
-      const response = await axios.post(
-        `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
-        {
-          chat_id: chatId,
-          text: text.slice(0, 4096),
-          parse_mode: "HTML",
-          ...options,
-        },
-        { timeout: 5000 }
-      );
-      return response.data.result.message_id;
-    } catch (error) {
-      console.error("Telegram xabarni yuborishda xato:", error.response?.data || error.message);
-      toast.error(
-        "Telegram xabarni yuborib bo'lmadi: " +
-          (error.response?.data?.description || error.message)
-      );
-      throw error;
-    }
+
+    const kitchenOrder = {
+      ...order,
+      kitchenId: `K${Date.now().toString().slice(-4)}`,
+      status: 'preparing',
+      startTime: new Date(),
+      estimatedReadyTime: new Date(Date.now() + 30 * 60000) // 30 daqiqa
+    };
+
+    setKitchenOrders(prev => [...prev, kitchenOrder]);
+    
+    // Telegram xabari
+    const message = `
+🔥 <b>TAYYORLASH BOSHLANDI</b>
+📋 <b>Buyurtma ID:</b> ${kitchenOrder.kitchenId}
+🍽️ <b>Stol:</b> ${order.tableName}
+👨‍🍳 <b>Ofitsiant:</b> ${order.waiter || 'Belgilanmagan'}
+⏰ <b>Boshlanish vaqti:</b> ${new Date().toLocaleString('uz-UZ')}
+⏱️ <b>Taxminiy tayyor bo'lish:</b> ${new Date(kitchenOrder.estimatedReadyTime).toLocaleString('uz-UZ')}
+
+<b>📋 Buyurtma:</b>
+${order.items.map(item => `• ${item.name} x${item.quantity}`).join('\n')}
+    `;
+
+    await sendTelegramMessage(message, "-4646692596");
+    toast.success("Tayyorlash boshlandi!");
   };
 
-  const editTelegramMessage = async (messageId, text) => {
-    try {
-      await axios.post(
-        `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageText`,
-        {
-          chat_id: MAIN_REPORTING_CHAT_ID,
-          message_id: messageId,
-          text: text.slice(0, 4096),
-          parse_mode: "HTML",
-        },
-        { timeout: 5000 }
-      );
-    } catch (error) {
-      console.error("Telegram xabarni tahrirlashda xato:", error.response?.data || error.message);
-      toast.error(
-        "Telegram xabarni tahrirlashda xato: " +
-          (error.response?.data?.description || error.message)
-      );
+  const markOrderAsReady = async (kitchenId) => {
+    const order = kitchenOrders.find(o => o.kitchenId === kitchenId);
+    if (!order) {
+      toast.error("Buyurtma topilmadi!");
+      return;
     }
+
+    const preparationTime = Math.round((new Date() - new Date(order.startTime)) / 60000);
+    
+    const readyOrder = {
+      ...order,
+      status: 'ready',
+      readyTime: new Date(),
+      preparationTime: preparationTime
+    };
+
+    setKitchenOrders(prev => prev.filter(o => o.kitchenId !== kitchenId));
+    
+    // Telegram xabari
+    const message = `
+✅ <b>TAYYOR BO'LDI!</b>
+📋 <b>Buyurtma ID:</b> ${kitchenId}
+🍽️ <b>Stol:</b> ${order.tableName}
+👨‍🍳 <b>Ofitsiant:</b> ${order.waiter || 'Belgilanmagan'}
+⏱️ <b>Tayyorlanish vaqti:</b> ${preparationTime} daqiqa
+🕒 <b>Tayyor bo'lish vaqti:</b> ${new Date().toLocaleString('uz-UZ')}
+
+<b>📋 Buyurtma:</b>
+${order.items.map(item => `• ${item.name} x${item.quantity}`).join('\n')}
+    `;
+
+    await sendTelegramMessage(message, "-4646692596");
+    toast.success("Buyurtma tayyor deb belgilandi!");
   };
 
   const sendOrdersToPreparation = async (tableId) => {
@@ -1056,9 +1140,15 @@ ${orderDetailsText || "Hozircha buyurtma yo'q"}
         generateReceiptPDF,
         markAsDebt,
         sendTelegramMessage,
+        // Yangi qo'shilgan kitchen funksiyalari
+        kitchenOrders,
+        startKitchenPreparation,
+        markOrderAsReady
       }}
     >
       {children}
     </AppContext.Provider>
   );
 };
+
+export default AppProvider;

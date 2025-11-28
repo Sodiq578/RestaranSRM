@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { FaBars, FaTimes, FaSignOutAlt, FaCog } from "react-icons/fa";
+import { 
+  FaBars, 
+  FaTimes, 
+  FaSignOutAlt, 
+  FaCog, 
+  FaUtensils,
+  FaHistory,
+  FaHome,
+  FaChartBar,
+  FaUserCog,
+  FaUserTie
+} from "react-icons/fa";
 import { MdAccessTime, MdPerson, MdRestaurantMenu } from "react-icons/md";
 import "./Navbar.css";
 import logo from "../assets/logo1.png";
@@ -88,15 +99,27 @@ function Navbar() {
 
           <div className="nav-links">
             <Link to="/" className="nav-link">
-              <MdRestaurantMenu className="nav-icon" />
+              <FaHome className="nav-icon" />
               Bosh Sahifa
             </Link>
+            <Link to="/orders" className="nav-link">
+              <FaHistory className="nav-icon" />
+              Buyurtmalar Tarixi
+            </Link>
             <Link to="/reports" className="nav-link">
-              <FaCog className="nav-icon" />
+              <FaChartBar className="nav-icon" />
               Hisobotlar
             </Link>
+            <Link to="/kitchen" className="nav-link">
+              <FaUtensils className="nav-icon" />
+              Oshxona
+            </Link>
+            <Link to="/user" className="nav-link">
+              <FaUserTie className="nav-icon" />
+              Foydalanuvchi
+            </Link>
             <Link to="/admin" className="nav-link">
-              <MdPerson className="nav-icon" />
+              <FaUserCog className="nav-icon" />
               Admin
             </Link>
           </div>
@@ -144,18 +167,32 @@ function Navbar() {
           
           <div className="mobile-menu-links">
             <Link to="/" className="mobile-link" onClick={() => setMenuOpen(false)}>
-              <MdRestaurantMenu className="mobile-icon" />
+              <FaHome className="mobile-icon" />
               Bosh Sahifa
             </Link>
+            <Link to="/orders" className="mobile-link" onClick={() => setMenuOpen(false)}>
+              <FaHistory className="mobile-icon" />
+              Buyurtmalar Tarixi
+            </Link>
             <Link to="/reports" className="mobile-link" onClick={() => setMenuOpen(false)}>
-              <FaCog className="mobile-icon" />
+              <FaChartBar className="mobile-icon" />
               Hisobotlar
             </Link>
+            <Link to="/kitchen" className="mobile-link" onClick={() => setMenuOpen(false)}>
+              <FaUtensils className="mobile-icon" />
+              Oshxona
+            </Link>
+            <Link to="/user" className="mobile-link" onClick={() => setMenuOpen(false)}>
+              <FaUserTie className="mobile-icon" />
+              Foydalanuvchi Dashboard
+            </Link>
             <Link to="/admin" className="mobile-link" onClick={() => setMenuOpen(false)}>
-              <MdPerson className="mobile-icon" />
+              <FaUserCog className="mobile-icon" />
               Admin Panel
             </Link>
+            
             <div className="mobile-menu-divider"></div>
+            
             <div className="mobile-user-info">
               <span className="mobile-time">
                 <MdAccessTime /> {currentTime}
@@ -173,6 +210,7 @@ function Navbar() {
                 {userInfo.name} ({userInfo.role})
               </span>
             </div>
+            
             <button className="logout-btn" onClick={handleLogout}>
               <FaSignOutAlt className="logout-icon" />
               Tizimdan Chiqish
