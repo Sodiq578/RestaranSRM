@@ -1,0 +1,643 @@
+/* ==================== ORDER HISTORY MODAL - "ohm-" PREFIX ==================== */
+
+/* ==================== OVERLAY ==================== */
+.ohm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+  animation: ohmFadeIn 0.25s ease;
+}
+
+@keyframes ohmFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ==================== CONTAINER ==================== */
+.ohm-container {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: ohmSlideUp 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes ohmSlideUp {
+  from { opacity: 0; transform: translateY(40px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ==================== HEADER ==================== */
+.ohm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f3f4f6;
+  background: linear-gradient(135deg, #fafbfc 0%, #ffffff 100%);
+  flex-shrink: 0;
+  gap: 16px;
+}
+
+.ohm-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ohm-header-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.ohm-bg-paid {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.ohm-bg-pending {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.ohm-bg-debt {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.ohm-bg-sent {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.ohm-bg-default {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.ohm-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ohm-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Status Badge */
+.ohm-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  width: fit-content;
+  white-space: nowrap;
+}
+
+.ohm-status-paid {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.ohm-status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.ohm-status-debt {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.ohm-status-sent {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.ohm-status-default {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.ohm-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: ohmPulse 2s infinite;
+}
+
+@keyframes ohmPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Close Button */
+.ohm-close-btn {
+  width: 38px;
+  height: 38px;
+  border: none;
+  background: #f3f4f6;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #6b7280;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.ohm-close-btn:hover {
+  background: #e5e7eb;
+  color: #1f2937;
+  transform: scale(1.05);
+}
+
+.ohm-close-btn:active {
+  transform: scale(0.95);
+}
+
+/* ==================== BODY ==================== */
+.ohm-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* ==================== SECTION TITLE ==================== */
+.ohm-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 14px 0;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.ohm-section-title svg {
+  color: #6366f1;
+  font-size: 0.9rem;
+}
+
+/* ==================== INFO CARD ==================== */
+.ohm-info-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.ohm-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.ohm-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.ohm-info-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ohm-info-label svg {
+  font-size: 0.7rem;
+}
+
+.ohm-info-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.ohm-total-highlight {
+  color: #059669;
+  font-size: 1rem;
+}
+
+/* ==================== ITEMS CARD ==================== */
+.ohm-items-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.ohm-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ohm-item-row {
+  padding: 10px 12px;
+  border: 1px solid #f3f4f6;
+  border-radius: 10px;
+  transition: background 0.15s ease;
+}
+
+.ohm-item-row:hover {
+  background: #fafbfc;
+}
+
+.ohm-item-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ohm-item-num {
+  color: #9ca3af;
+  font-weight: 600;
+  font-size: 0.85rem;
+  min-width: 24px;
+}
+
+.ohm-item-name {
+  flex: 1;
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 0.9rem;
+  min-width: 120px;
+}
+
+.ohm-item-qty {
+  font-weight: 700;
+  color: #6366f1;
+  background: #eef2ff;
+  padding: 3px 10px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.ohm-item-price {
+  font-weight: 700;
+  color: #059669;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  min-width: 80px;
+  text-align: right;
+}
+
+/* Item Comment */
+.ohm-item-comment {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #fffbeb;
+  border-left: 3px solid #f59e0b;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: #92400e;
+  line-height: 1.5;
+}
+
+.ohm-item-comment svg {
+  color: #f59e0b;
+  margin-top: 2px;
+  flex-shrink: 0;
+  font-size: 0.75rem;
+}
+
+/* Items Total */
+.ohm-items-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0 0;
+  margin-top: 14px;
+  border-top: 2px solid #e5e7eb;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #1f2937;
+}
+
+.ohm-items-total span:last-child {
+  color: #059669;
+  font-size: 1.2rem;
+}
+
+/* Empty Items */
+.ohm-empty-items {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 20px;
+  text-align: center;
+  color: #9ca3af;
+}
+
+.ohm-empty-icon {
+  font-size: 2rem;
+  margin-bottom: 8px;
+  opacity: 0.5;
+}
+
+.ohm-empty-items p {
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* ==================== DEBT CARD ==================== */
+.ohm-debt-card {
+  background: #ffffff;
+  border: 1px solid #fecaca;
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.ohm-debt-title {
+  color: #991b1b !important;
+  border-bottom-color: #fecaca !important;
+}
+
+.ohm-debt-title svg {
+  color: #ef4444 !important;
+}
+
+.ohm-debt-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.ohm-debt-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ohm-debt-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #dc2626;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ohm-debt-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* ==================== FOOTER ==================== */
+.ohm-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid #e5e7eb;
+  background: #fafbfc;
+  flex-shrink: 0;
+}
+
+.ohm-btn-secondary,
+.ohm-btn-print {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.ohm-btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.ohm-btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+.ohm-btn-print {
+  background: #6366f1;
+  color: #ffffff;
+}
+
+.ohm-btn-print:hover {
+  background: #4f46e5;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.ohm-btn-secondary:active,
+.ohm-btn-print:active {
+  transform: scale(0.96);
+}
+
+/* ==================== SCROLLBAR ==================== */
+.ohm-body::-webkit-scrollbar {
+  width: 5px;
+}
+
+.ohm-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ohm-body::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.ohm-body::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 768px) {
+  .ohm-overlay {
+    padding: 12px;
+    align-items: flex-end;
+  }
+
+  .ohm-container {
+    max-height: 85vh;
+    border-radius: 20px 20px 0 0;
+    animation: ohmSlideUpMobile 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes ohmSlideUpMobile {
+    from { opacity: 0; transform: translateY(100%); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .ohm-header {
+    padding: 16px 18px;
+  }
+
+  .ohm-header-icon {
+    width: 42px;
+    height: 42px;
+    font-size: 1.2rem;
+    border-radius: 12px;
+  }
+
+  .ohm-title {
+    font-size: 1.05rem;
+  }
+
+  .ohm-body {
+    padding: 16px;
+  }
+
+  .ohm-info-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .ohm-footer {
+    padding: 12px 16px;
+    flex-direction: column;
+  }
+
+  .ohm-btn-secondary,
+  .ohm-btn-print {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .ohm-overlay {
+    padding: 0;
+  }
+
+  .ohm-container {
+    max-height: 90vh;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .ohm-header {
+    padding: 14px 16px;
+    gap: 10px;
+  }
+
+  .ohm-header-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 1.1rem;
+    border-radius: 10px;
+  }
+
+  .ohm-title {
+    font-size: 0.95rem;
+  }
+
+  .ohm-status-badge {
+    font-size: 0.7rem;
+    padding: 3px 10px;
+  }
+
+  .ohm-body {
+    padding: 12px;
+  }
+
+  .ohm-info-card,
+  .ohm-items-card,
+  .ohm-debt-card {
+    padding: 14px;
+  }
+
+  .ohm-debt-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ohm-item-main {
+    gap: 6px;
+  }
+
+  .ohm-item-name {
+    font-size: 0.85rem;
+    min-width: 100px;
+  }
+
+  .ohm-item-price {
+    font-size: 0.85rem;
+    min-width: 60px;
+  }
+
+  .ohm-close-btn {
+    width: 34px;
+    height: 34px;
+  }
+}
+
+/* ==================== PRINT ==================== */
+@media print {
+  .ohm-overlay {
+    position: static;
+    background: none;
+    backdrop-filter: none;
+  }
+
+  .ohm-container {
+    box-shadow: none;
+    max-height: none;
+    border: 1px solid #000;
+  }
+
+  .ohm-footer,
+  .ohm-close-btn {
+    display: none !important;
+  }
+}

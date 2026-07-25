@@ -1,18 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   FaBars, 
   FaTimes, 
   FaSignOutAlt, 
-  FaCog, 
   FaUtensils,
   FaHistory,
   FaHome,
   FaChartBar,
   FaUserCog,
-  FaUserTie
+  FaUserTie,
+  FaChevronDown,
+  FaUser,
+  FaKey,
+  FaBell,
+  FaMoon,
+  FaSun
 } from "react-icons/fa";
-import { MdAccessTime, MdPerson, MdRestaurantMenu } from "react-icons/md";
+import { MdAccessTime, MdPerson } from "react-icons/md";
 import "./Navbar.css";
 import logo from "../assets/logo1.png";
 
@@ -20,260 +25,186 @@ function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState("");
   const [scrolled, setScrolled] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [userInfo, setUserInfo] = useState({
-    name: "Admin",
-    role: "Operator",
-    profilePicture: null
-  });
+  const [settingsDropdown, setSettingsDropdown] = useState(false);
+  const [userInfo, setUserInfo] = useState(null);
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
-  };
+  // Foydalanuvchi ma'lumotlarini yuklash
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("currentUser") || "{}");
+    setUserInfo(user);
+  }, [location]);
 
-  const toggleModal = () => {
-    setModalOpen(!modalOpen);
-  };
-
-  // Handle file input for profile picture
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setUserInfo({ ...userInfo, profilePicture: reader.result });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // Handle form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Here you would typically send the updated user info to a backend
-    console.log("Updated user info:", userInfo);
-    setModalOpen(false);
-  };
-
-  // Update time every second
+  // Vaqt
   useEffect(() => {
     const updateClock = () => {
       const now = new Date();
-      const timeString = now.toLocaleTimeString("uz-UZ", {
+      setCurrentTime(now.toLocaleTimeString("uz-UZ", {
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
-      });
-      setCurrentTime(timeString);
+      }));
     };
-
     updateClock();
     const interval = setInterval(updateClock, 1000);
     return () => clearInterval(interval);
   }, []);
 
-  // Handle scroll
+  // Scroll
   useEffect(() => {
-    const handleScroll = () => {
-      const isScrolled = window.scrollY > 10;
-      setScrolled(isScrolled);
-    };
-
+    const handleScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const handleLogout = () => {
-    console.log("Chiqish amalga oshirildi");
+    localStorage.removeItem("currentUser");
     setMenuOpen(false);
+    navigate("/login");
   };
+
+  const isAdmin = userInfo?.role === "admin";
+  const isWaiter = userInfo?.role === "waiter";
+  const isKitchen = userInfo?.role === "kitchen";
+  const isBar = userInfo?.role === "bar";
 
   return (
     <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
       <div className="nav-container">
         <div className="nav-main">
+          {/* Logo */}
           <div className="navbar-logo">
-            <img src={logo} alt="Restoran POS Logo" className="app-logo" />
+            <img src={logo} alt="Logo" className="app-logo" />
             <span className="logo-text">SDK System</span>
           </div>
 
+          {/* Desktop Links - Role based */}
           <div className="nav-links">
-            <Link to="/" className="nav-link">
-              <FaHome className="nav-icon" />
-              Bosh Sahifa
-            </Link>
-            <Link to="/orders" className="nav-link">
-              <FaHistory className="nav-icon" />
-              Buyurtmalar Tarixi
-            </Link>
-            <Link to="/reports" className="nav-link">
-              <FaChartBar className="nav-icon" />
-              Hisobotlar
-            </Link>
-            <Link to="/kitchen" className="nav-link">
-              <FaUtensils className="nav-icon" />
-              Oshxona
-            </Link>
-            <Link to="/user" className="nav-link">
-              <FaUserTie className="nav-icon" />
-              Foydalanuvchi
-            </Link>
-            <Link to="/admin" className="nav-link">
-              <FaUserCog className="nav-icon" />
-              Admin
-            </Link>
+            {(isAdmin || isWaiter) && (
+              <Link to="/" className={`nav-link ${location.pathname === "/" ? "active" : ""}`}>
+                <FaHome className="nav-icon" /> Bosh Sahifa
+              </Link>
+            )}
+            
+            {(isAdmin || isWaiter) && (
+              <Link to="/orders" className={`nav-link ${location.pathname === "/orders" ? "active" : ""}`}>
+                <FaHistory className="nav-icon" /> Buyurtmalar Tarixi
+              </Link>
+            )}
+            
+            {isAdmin && (
+              <Link to="/reports" className={`nav-link ${location.pathname === "/reports" ? "active" : ""}`}>
+                <FaChartBar className="nav-icon" /> Hisobotlar
+              </Link>
+            )}
+            
+            {(isAdmin || isKitchen || isBar) && (
+              <Link to="/kitchen" className={`nav-link ${location.pathname === "/kitchen" ? "active" : ""}`}>
+                <FaUtensils className="nav-icon" /> Oshxona
+              </Link>
+            )}
+            
+            {(isAdmin || isWaiter) && (
+              <Link to="/user" className={`nav-link ${location.pathname === "/user" ? "active" : ""}`}>
+                <FaUserTie className="nav-icon" /> Foydalanuvchi
+              </Link>
+            )}
+            
+            {isAdmin && (
+              <Link to="/admin" className={`nav-link ${location.pathname === "/admin" ? "active" : ""}`}>
+                <FaUserCog className="nav-icon" /> Admin
+              </Link>
+            )}
           </div>
         </div>
 
-        <header className="app-header">
-          <div className="header-left">
-            <p className="header-subtitle">Professional boshqaruv yechimi</p>
-          </div>
+        {/* Header Info */}
+        <div className="app-header">
           <div className="header-info">
             <span className="time-display">
               <MdAccessTime className="info-icon" />
               {currentTime}
             </span>
-            <span className="user-info" onClick={toggleModal}>
-              {userInfo.profilePicture ? (
-                <img
-                  src={userInfo.profilePicture}
-                  alt="Profile"
-                  className="profile-picture"
-                />
-              ) : (
+            {userInfo && (
+              <span className="user-info">
                 <MdPerson className="info-icon" />
-              )}
-              <span className="user-details">
-                <strong>{userInfo.name}</strong>
-                <span className="user-role">{userInfo.role}</span>
+                <span className="user-details">
+                  <strong>{userInfo.name}</strong>
+                  <span className="user-role">
+                    {userInfo.role === "admin" ? "Admin" : 
+                     userInfo.role === "waiter" ? "Ofitsiant" : 
+                     userInfo.role === "kitchen" ? "Oshxona" : 
+                     userInfo.role === "bar" ? "Bar" : "Foydalanuvchi"}
+                  </span>
+                </span>
               </span>
-            </span>
-          </div>
-        </header>
-
-        <div className="menu-icon" onClick={toggleMenu}>
-          {menuOpen ? (
-            <FaTimes className="icon-close" />
-          ) : (
-            <FaBars className="icon-menu" />
-          )}
-        </div>
-
-        <div className={`mobile-menu ${menuOpen ? "active" : ""}`}>
-          <div className="mobile-menu-header">
-            <h3>Menyu</h3>
-          </div>
-          
-          <div className="mobile-menu-links">
-            <Link to="/" className="mobile-link" onClick={() => setMenuOpen(false)}>
-              <FaHome className="mobile-icon" />
-              Bosh Sahifa
-            </Link>
-            <Link to="/orders" className="mobile-link" onClick={() => setMenuOpen(false)}>
-              <FaHistory className="mobile-icon" />
-              Buyurtmalar Tarixi
-            </Link>
-            <Link to="/reports" className="mobile-link" onClick={() => setMenuOpen(false)}>
-              <FaChartBar className="mobile-icon" />
-              Hisobotlar
-            </Link>
-            <Link to="/kitchen" className="mobile-link" onClick={() => setMenuOpen(false)}>
-              <FaUtensils className="mobile-icon" />
-              Oshxona
-            </Link>
-            <Link to="/user" className="mobile-link" onClick={() => setMenuOpen(false)}>
-              <FaUserTie className="mobile-icon" />
-              Foydalanuvchi Dashboard
-            </Link>
-            <Link to="/admin" className="mobile-link" onClick={() => setMenuOpen(false)}>
-              <FaUserCog className="mobile-icon" />
-              Admin Panel
-            </Link>
-            
-            <div className="mobile-menu-divider"></div>
-            
-            <div className="mobile-user-info">
-              <span className="mobile-time">
-                <MdAccessTime /> {currentTime}
-              </span>
-              <span className="mobile-user" onClick={toggleModal}>
-                {userInfo.profilePicture ? (
-                  <img
-                    src={userInfo.profilePicture}
-                    alt="Profile"
-                    className="mobile-profile-picture"
-                  />
-                ) : (
-                  <MdPerson />
-                )}
-                {userInfo.name} ({userInfo.role})
-              </span>
-            </div>
-            
-            <button className="logout-btn" onClick={handleLogout}>
-              <FaSignOutAlt className="logout-icon" />
-              Tizimdan Chiqish
+            )}
+            <button className="logout-btn-header" onClick={handleLogout} title="Chiqish">
+              <FaSignOutAlt />
             </button>
           </div>
         </div>
 
-        {modalOpen && (
-          <div className="modal-overlay">
-            <div className="user-modal">
-              <div className="modal-header">
-                <h2>Foydalanuvchi Ma'lumotlari</h2>
-                <FaTimes className="modal-close" onClick={toggleModal} />
-              </div>
-              <form onSubmit={handleSubmit} className="modal-form">
-                <div className="form-group">
-                  <label htmlFor="name">Ism:</label>
-                  <input
-                    type="text"
-                    id="name"
-                    value={userInfo.name}
-                    onChange={(e) =>
-                      setUserInfo({ ...userInfo, name: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="profilePicture">Rasm:</label>
-                  <input
-                    type="file"
-                    id="profilePicture"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                  />
-                  {userInfo.profilePicture && (
-                    <img
-                      src={userInfo.profilePicture}
-                      alt="Preview"
-                      className="preview-image"
-                    />
-                  )}
-                </div>
-                <div className="modal-actions">
-                  <button type="submit" className="save-btn">
-                    Saqlash
-                  </button>
-                  <button
-                    type="button"
-                    className="cancel-btn"
-                    onClick={toggleModal}
-                  >
-                    Bekor qilish
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {menuOpen && <div className="menu-overlay" onClick={() => setMenuOpen(false)}></div>}
+        {/* Mobile Menu Toggle */}
+        <div className="menu-icon" onClick={() => setMenuOpen(!menuOpen)}>
+          {menuOpen ? <FaTimes /> : <FaBars />}
+        </div>
       </div>
+
+      {/* Mobile Menu */}
+      <div className={`mobile-menu ${menuOpen ? "active" : ""}`}>
+        <div className="mobile-menu-header">
+          <h3>Menyu</h3>
+        </div>
+        
+        <div className="mobile-menu-links">
+          {(isAdmin || isWaiter) && (
+            <Link to="/" className="mobile-link" onClick={() => setMenuOpen(false)}>
+              <FaHome /> Bosh Sahifa
+            </Link>
+          )}
+          {(isAdmin || isWaiter) && (
+            <Link to="/orders" className="mobile-link" onClick={() => setMenuOpen(false)}>
+              <FaHistory /> Buyurtmalar Tarixi
+            </Link>
+          )}
+          {isAdmin && (
+            <Link to="/reports" className="mobile-link" onClick={() => setMenuOpen(false)}>
+              <FaChartBar /> Hisobotlar
+            </Link>
+          )}
+          {(isAdmin || isKitchen || isBar) && (
+            <Link to="/kitchen" className="mobile-link" onClick={() => setMenuOpen(false)}>
+              <FaUtensils /> Oshxona
+            </Link>
+          )}
+          {isAdmin && (
+            <Link to="/admin" className="mobile-link" onClick={() => setMenuOpen(false)}>
+              <FaUserCog /> Admin Panel
+            </Link>
+          )}
+          
+          <div className="mobile-menu-divider"></div>
+          
+          <div className="mobile-user-info">
+            <span className="mobile-time">
+              <MdAccessTime /> {currentTime}
+            </span>
+            {userInfo && (
+              <span className="mobile-user">
+                <MdPerson /> {userInfo.name} ({userInfo.role})
+              </span>
+            )}
+          </div>
+          
+          <button className="logout-btn" onClick={handleLogout}>
+            <FaSignOutAlt /> Tizimdan Chiqish
+          </button>
+        </div>
+      </div>
+
+      {menuOpen && <div className="menu-overlay" onClick={() => setMenuOpen(false)}></div>}
     </nav>
   );
 }
