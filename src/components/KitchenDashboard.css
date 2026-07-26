@@ -615,7 +615,8 @@
 .kd-btn-ready,
 .kd-btn-complete,
 .kd-btn-detail,
-.kd-btn-delete {
+.kd-btn-delete,
+.kd-btn-print {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -634,7 +635,6 @@
   background: var(--kd-danger);
   color: var(--kd-white);
 }
-
 .kd-btn-start:hover {
   background: #dc2626;
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
@@ -645,7 +645,6 @@
   background: var(--kd-success);
   color: var(--kd-white);
 }
-
 .kd-btn-ready:hover {
   background: #059669;
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
@@ -656,7 +655,6 @@
   background: var(--kd-purple);
   color: var(--kd-white);
 }
-
 .kd-btn-complete:hover {
   background: #7c3aed;
   box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
@@ -666,7 +664,6 @@
   background: var(--kd-primary-bg);
   color: var(--kd-primary);
 }
-
 .kd-btn-detail:hover {
   background: var(--kd-primary);
   color: var(--kd-white);
@@ -676,9 +673,17 @@
   background: var(--kd-danger-bg);
   color: var(--kd-danger);
 }
-
 .kd-btn-delete:hover {
   background: var(--kd-danger);
+  color: var(--kd-white);
+}
+
+.kd-btn-print {
+  background: var(--kd-primary-bg);
+  color: var(--kd-primary);
+}
+.kd-btn-print:hover {
+  background: var(--kd-primary);
   color: var(--kd-white);
 }
 
@@ -686,7 +691,8 @@
 .kd-btn-ready:active,
 .kd-btn-complete:active,
 .kd-btn-detail:active,
-.kd-btn-delete:active {
+.kd-btn-delete:active,
+.kd-btn-print:active {
   transform: scale(0.95);
 }
 
@@ -718,6 +724,146 @@
 .kd-card-status.completed-status {
   background: var(--kd-purple-bg);
   color: #5b21b6;
+}
+
+/* ==================== MODAL ==================== */
+.kd-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.kd-modal {
+  background: var(--kd-white);
+  border-radius: var(--kd-radius-lg);
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--kd-shadow-xl);
+}
+
+.kd-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--kd-gray-200);
+}
+
+.kd-modal-header h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--kd-gray-800);
+}
+
+.kd-modal-close {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: var(--kd-gray-100);
+  border-radius: 50%;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--kd-transition-fast);
+}
+
+.kd-modal-close:hover {
+  background: var(--kd-gray-200);
+}
+
+.kd-modal-body {
+  padding: 20px 24px;
+}
+
+.kd-modal-body > div {
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+  color: var(--kd-gray-700);
+}
+
+.kd-modal-body hr {
+  margin: 16px 0;
+  border: none;
+  border-top: 1px solid var(--kd-gray-200);
+}
+
+.kd-modal-items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kd-modal-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 0.9rem;
+  border-bottom: 1px dashed var(--kd-gray-100);
+}
+
+.kd-modal-total {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 2px solid var(--kd-gray-200);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.kd-modal-footer {
+  display: flex;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--kd-gray-200);
+  background: var(--kd-gray-50);
+}
+
+.kd-modal-btn-close,
+.kd-modal-btn-ready,
+.kd-modal-btn-complete {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: var(--kd-radius-sm);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: var(--kd-transition-fast);
+}
+
+.kd-modal-btn-close {
+  background: var(--kd-gray-200);
+  color: var(--kd-gray-600);
+}
+.kd-modal-btn-close:hover {
+  background: var(--kd-gray-300);
+}
+
+.kd-modal-btn-ready {
+  background: var(--kd-success);
+  color: var(--kd-white);
+}
+.kd-modal-btn-ready:hover {
+  background: #059669;
+}
+
+.kd-modal-btn-complete {
+  background: var(--kd-purple);
+  color: var(--kd-white);
+}
+.kd-modal-btn-complete:hover {
+  background: #7c3aed;
 }
 
 /* ==================== RESPONSIVE ==================== */

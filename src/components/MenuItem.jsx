@@ -1,6 +1,7 @@
+// src/components/MenuItem.jsx
 import React, { useContext, useState } from "react";
 import { AppContext } from "../context/AppContext";
-import { FaPlus, FaCheckCircle, FaCommentAlt } from "react-icons/fa";
+import { FaPlus, FaMinus, FaPencilAlt, FaTimes, FaCommentAlt } from "react-icons/fa";
 import "./MenuItem.css";
 
 const formatPrice = (price) => {
@@ -12,147 +13,131 @@ const formatPrice = (price) => {
   }).format(price);
 };
 
-const TELEGRAM_BOT_TOKEN = "7885205848:AAEcgs2vXjZqyV40f6Jvl8Rj1OMq0r7QGkA";
-const MAIN_REPORTING_CHAT_ID = "-4646692596";
-const BAR_CHAT_ID = "-4646692596";
-const SALATCHILAR_CHAT_ID = "-4753754534";
-const OSHXONA_CHAT_ID = "-4686557731";
-
 const MenuItem = ({ item }) => {
-  const { addToOrder, selectedTableId } = useContext(AppContext);
-  const [isSelected, setIsSelected] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [quantity, setQuantity] = useState(0);
-  const [showMessageInput, setShowMessageInput] = useState(false);
-  const [additionalMessage, setAdditionalMessage] = useState("");
-  const [isSending, setIsSending] = useState(false);
+  const { tables, selectedTableId, addToOrder, removeFromOrder, updateOrder } = useContext(AppContext);
+  const [showCommentModal, setShowCommentModal] = useState(false);
+  const [commentText, setCommentText] = useState("");
 
-  // List of product categories that require additional message
-  const needsMessageCategories = ["Ichimliklar", "Salatlar", "Shashlik"];
+  const table = tables.find(t => t.id === selectedTableId);
+  const existingOrder = table?.orders?.find(o => o.id === item.id);
+  const quantity = existingOrder?.quantity || 0;
+  const existingComment = existingOrder?.comment || "";
 
   const handleAdd = () => {
     if (!selectedTableId) {
       alert("Iltimos, avval stol tanlang!");
       return;
     }
+    addToOrder({ ...item, quantity: 1 });
+  };
 
-    // Check if this item needs additional message
-    if (needsMessageCategories.includes(item.category) && !additionalMessage) {
-      setShowMessageInput(true);
+  const handleRemove = () => {
+    if (!selectedTableId || quantity === 0) return;
+    const index = table?.orders?.findIndex(o => o.id === item.id);
+    if (index === undefined || index < 0) return;
+    if (quantity === 1) {
+      removeFromOrder(selectedTableId, index);
+    } else {
+      updateOrder(selectedTableId, index, quantity - 1, existingComment);
+    }
+  };
+
+  const openCommentModal = () => {
+    if (!selectedTableId) {
+      alert("Iltimos, avval stol tanlang!");
       return;
     }
-
-    setIsSelected(true);
-    setShowModal(true);
-    setQuantity((prev) => prev + 1);
-    
-    addToOrder({
-      id: item.id,
-      name: item.name,
-      price: item.price,
-      quantity: 1,
-      additionalMessage: additionalMessage || null
-    });
-
-    // Send additional message to Telegram if exists
-    if (additionalMessage) {
-      sendMessageToTelegram(item, additionalMessage);
-      setAdditionalMessage(""); // Reset message after sending
-    }
-
-    setTimeout(() => {
-      setIsSelected(false);
-      setShowModal(false);
-    }, 1000);
+    setCommentText(existingComment);
+    setShowCommentModal(true);
   };
 
-  const sendMessageToTelegram = async (item, message) => {
-    setIsSending(true);
-    try {
-      const text = `🛒 Yangi buyurtma:\n\n📌 Stol: ${selectedTableId}\n🍽️ Mahsulot: ${item.name}\n✍️ Izoh: ${message}\n\n⏳ Vaqt: ${new Date().toLocaleString()}`;
-      
-      let chatId = MAIN_REPORTING_CHAT_ID;
-      if (item.category === "Ichimliklar") chatId = BAR_CHAT_ID;
-      else if (item.category === "Salatlar") chatId = SALATCHILAR_CHAT_ID;
-      else if (item.category === "Shashlik") chatId = OSHXONA_CHAT_ID;
-      
-      const response = await fetch(
-        `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            chat_id: chatId,
-            text: text,
-          }),
-        }
-      );
-      
-      if (!response.ok) {
-        console.error("Telegramga xabar yuborishda xatolik yuz berdi");
-      }
-    } catch (error) {
-      console.error("Xatolik:", error);
-    } finally {
-      setIsSending(false);
+  const saveComment = () => {
+    if (!selectedTableId) return;
+    const index = table?.orders?.findIndex(o => o.id === item.id);
+    if (index !== undefined && index >= 0) {
+      updateOrder(selectedTableId, index, quantity, commentText);
+    } else {
+      addToOrder({ ...item, quantity: 1, comment: commentText });
     }
-  };
-
-  const handleMessageSubmit = () => {
-    setShowMessageInput(false);
-    handleAdd(); // Proceed with adding after message is entered
+    setShowCommentModal(false);
+    setCommentText("");
   };
 
   return (
     <>
-      <div className={`menu-item ${isSelected ? "selected" : ""}`}>
-        <div className="image-container">
-          <img src={item.image} alt={item.name} className="menu-item-image" />
+      <div className="menu-item-card">
+        {/* Rasm */}
+        <div className="menu-item-image-wrapper">
+          <img 
+            src={item.image || "/placeholder.png"} 
+            alt={item.name} 
+            className="menu-item-img" 
+          />
+          {item.isBestSeller && (
+            <span className="best-seller-badge">⭐ Mashhur</span>
+          )}
         </div>
-        <div className="menu-item-details">
-          <h3 className="menu-item-title" data-title={item.name}>
-            {item.name}
-          </h3>
-          <p className="category">{item.category}</p>
-          <div className="price-quantity">
-            <p className="menu-item-price">{formatPrice(item.price)}</p>
-            {quantity > 0 && (
-              <p className="menu-item-quantity">Jami: {quantity}</p>
-            )}
+
+        {/* Ma'lumot */}
+        <div className="menu-item-info">
+          <h4 className="menu-item-name">{item.name}</h4>
+          <span className="menu-item-category">{item.category}</span>
+          <div className="menu-item-bottom">
+            <span className="menu-item-price">{formatPrice(item.price)}</span>
+            <button 
+              className="menu-item-comment-btn" 
+              onClick={openCommentModal}
+              title="Izoh qo'shish"
+            >
+              <FaPencilAlt />
+            </button>
           </div>
         </div>
-        <button className="add-btn" onClick={handleAdd} disabled={isSending}>
-          <FaPlus /> Qo'shish
-        </button>
+
+        {/* Miqdor boshqaruvi */}
+        <div className="menu-item-controls">
+          <button 
+            className="menu-item-qty-btn minus" 
+            onClick={handleRemove}
+            disabled={quantity === 0}
+          >
+            -
+          </button>
+          <span className="menu-item-qty">{quantity}</span>
+          <button 
+            className="menu-item-qty-btn plus" 
+            onClick={handleAdd}
+          >
+           +
+          </button>
+        </div>
       </div>
-      
-      {showModal && (
-        <div className="confirmation-modal">
-          <div className="modal-content">
-            <FaCheckCircle className="modal-icon" />
-            <p>{item.name} qo'shildi! (Jami: {quantity})</p>
-          </div>
-        </div>
-      )}
-      
-      {showMessageInput && (
-        <div className="message-modal">
-          <div className="message-modal-content">
-            <h4>{item.name} uchun qo'shimcha izoh</h4>
-            <textarea
-              value={additionalMessage}
-              onChange={(e) => setAdditionalMessage(e.target.value)}
-              placeholder="Masalan: Muzli, Achchiq, Limon bilan..."
-              rows={3}
-            />
-            <div className="message-modal-buttons">
-              <button onClick={() => setShowMessageInput(false)}>
+
+      {/* Izoh modal */}
+      {showCommentModal && (
+        <div className="comment-modal-overlay" onClick={() => setShowCommentModal(false)}>
+          <div className="comment-modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="comment-modal-header">
+              <h4>✍️ {item.name} uchun izoh</h4>
+              <button className="comment-modal-close" onClick={() => setShowCommentModal(false)}>
+                <FaTimes />
+              </button>
+            </div>
+            <div className="comment-modal-body">
+              <textarea
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder="Masalan: Muzli, Achchiq, Limon bilan, Tuzsiz..."
+                rows={3}
+                autoFocus
+              />
+            </div>
+            <div className="comment-modal-footer">
+              <button className="comment-btn-cancel" onClick={() => setShowCommentModal(false)}>
                 Bekor qilish
               </button>
-              <button onClick={handleMessageSubmit} disabled={!additionalMessage}>
-                <FaCommentAlt /> Tasdiqlash
+              <button className="comment-btn-submit" onClick={saveComment}>
+                <FaCommentAlt /> Saqlash
               </button>
             </div>
           </div>

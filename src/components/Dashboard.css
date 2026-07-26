@@ -1,0 +1,472 @@
+/* src/components/Dashboard.css */
+
+/* ===== ASOSIY KONTEYNER ===== */
+.dashboard {
+  padding: 20px 16px 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ===== HEADER ===== */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.dashboard-header h2 {
+  font-size: 26px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.3px;
+  background: linear-gradient(135deg, #0f172a, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dashboard-date {
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 6px 18px;
+  border-radius: 30px;
+  border: 1px solid #e2e8f0;
+  backdrop-filter: blur(4px);
+  white-space: nowrap;
+}
+
+/* ===== STATS KARTALARI ===== */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.stat {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  border-radius: 16px;
+  padding: 18px 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: default;
+}
+
+.stat:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+  border-color: rgba(99, 102, 241, 0.15);
+}
+
+.stat-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+  flex-shrink: 0;
+  transition: transform 0.3s;
+}
+
+.stat:hover .stat-icon {
+  transform: scale(1.05) rotate(-2deg);
+}
+
+.stat.revenue .stat-icon { background: linear-gradient(135deg, #22c55e, #16a34a); }
+.stat.orders .stat-icon   { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.stat.tables .stat-icon   { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+.stat.best .stat-icon     { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stat-value small {
+  font-size: 14px;
+  font-weight: 400;
+  color: #94a3b8;
+  margin-left: 4px;
+}
+
+/* ===== STATUS BAR ===== */
+.status-bar {
+  display: flex;
+  gap: 16px 28px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+  background: white;
+  padding: 12px 20px;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  border: 1px solid #f1f5f9;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.status .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.status:hover .dot {
+  transform: scale(1.2);
+}
+
+.status.free .dot     { background: #22c55e; }
+.status.occupied .dot { background: #ef4444; }
+.status.reserved .dot { background: #f59e0b; }
+.status.cleaning .dot { background: #8b5cf6; }
+
+/* ===== SECTIONS (umumiy) ===== */
+.section {
+  background: white;
+  border-radius: 16px;
+  padding: 18px 20px;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  border: 1px solid #f1f5f9;
+  transition: box-shadow 0.3s;
+}
+
+.section:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0 0 14px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-icon {
+  color: #f59e0b;
+  font-size: 20px;
+}
+
+/* ===== BEST SELLERS ===== */
+.bestsellers {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bestseller {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: #f8fafc;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.bestseller:hover {
+  background: #f1f5f9;
+  transform: translateX(4px);
+}
+
+.bestseller .rank {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.bestseller .name {
+  flex: 1;
+  font-weight: 500;
+  font-size: 15px;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bestseller .count {
+  font-size: 14px;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+/* ===== RECENT ORDERS ===== */
+.recent {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.recent-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: #f8fafc;
+  font-size: 14px;
+  transition: background 0.2s, transform 0.2s;
+  flex-wrap: wrap;
+}
+
+.recent-item:hover {
+  background: #f1f5f9;
+  transform: translateX(4px);
+}
+
+.recent-item .table {
+  font-weight: 600;
+  color: #0f172a;
+  min-width: 70px;
+  flex-shrink: 0;
+}
+
+.recent-item .items {
+  flex: 1;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recent-item .total {
+  font-weight: 600;
+  color: #2563eb;
+  flex-shrink: 0;
+}
+
+.recent-item .badge {
+  font-size: 12px;
+  padding: 3px 14px;
+  border-radius: 30px;
+  background: #e2e8f0;
+  color: #475569;
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+/* ===== EMPTY STATE ===== */
+.empty {
+  color: #94a3b8;
+  font-size: 15px;
+  padding: 20px 0;
+  text-align: center;
+}
+
+/* ======================================================
+   RESPONSIVE
+   ====================================================== */
+
+/* Telefon (≤ 600px) */
+@media (max-width: 600px) {
+  .dashboard {
+    padding: 14px 10px 20px;
+  }
+
+  .dashboard-header h2 {
+    font-size: 20px;
+  }
+  .dashboard-date {
+    font-size: 12px;
+    padding: 4px 12px;
+  }
+
+  .stats {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .stat {
+    padding: 14px 12px;
+    gap: 10px;
+    border-radius: 14px;
+  }
+
+  .stat-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    border-radius: 12px;
+  }
+
+  .stat-label {
+    font-size: 10px;
+  }
+  .stat-value {
+    font-size: 18px;
+  }
+  .stat-value small {
+    font-size: 12px;
+  }
+
+  .status-bar {
+    padding: 10px 14px;
+    gap: 8px 16px;
+  }
+  .status {
+    font-size: 13px;
+  }
+  .status .dot {
+    width: 10px;
+    height: 10px;
+  }
+
+  .section {
+    padding: 14px 14px;
+    border-radius: 14px;
+  }
+  .section-title {
+    font-size: 15px;
+  }
+
+  .bestseller {
+    padding: 6px 10px;
+    gap: 10px;
+  }
+  .bestseller .rank {
+    width: 24px;
+    height: 24px;
+    font-size: 11px;
+  }
+  .bestseller .name {
+    font-size: 14px;
+  }
+  .bestseller .count {
+    font-size: 13px;
+  }
+
+  .recent-item {
+    padding: 6px 10px;
+    gap: 8px;
+    font-size: 13px;
+  }
+  .recent-item .table {
+    min-width: 50px;
+    font-size: 13px;
+  }
+  .recent-item .items {
+    white-space: normal;
+    width: 100%;
+    order: 3;
+  }
+  .recent-item .total {
+    font-size: 14px;
+  }
+  .recent-item .badge {
+    font-size: 10px;
+    padding: 2px 10px;
+  }
+}
+
+/* Juda kichik telefon (≤ 400px) */
+@media (max-width: 400px) {
+  .stats {
+    gap: 6px;
+  }
+  .stat {
+    padding: 10px 8px;
+    gap: 6px;
+  }
+  .stat-icon {
+    width: 34px;
+    height: 34px;
+    font-size: 16px;
+  }
+  .stat-value {
+    font-size: 16px;
+  }
+  .status {
+    font-size: 12px;
+  }
+  .recent-item {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+  .recent-item .table {
+    font-size: 12px;
+    min-width: 40px;
+  }
+  .recent-item .total {
+    font-size: 13px;
+  }
+}
+
+/* Planshet (601px – 768px) */
+@media (min-width: 601px) and (max-width: 768px) {
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  .stat {
+    padding: 16px 14px;
+  }
+  .status-bar {
+    gap: 12px 24px;
+  }
+  .recent-item .items {
+    white-space: nowrap;
+  }
+}
+
+/* Desktop (≥ 769px) */
+@media (min-width: 769px) {
+  .stats {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .status-bar {
+    gap: 20px 40px;
+  }
+}

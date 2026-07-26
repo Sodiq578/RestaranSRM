@@ -1,631 +1,522 @@
-/* Asosiy navbar stillari */
+/* ============================================================
+   NAVBAR
+   ============================================================ */
 .navbar {
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-  color: white;
-  padding: 0;
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-  position: fixed;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0 24px;
+  position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
   z-index: 1000;
   transition: all 0.3s ease;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
 }
 
 .navbar.scrolled {
-  padding: 5px 0;
-  background: linear-gradient(135deg, #1a3363 0%, #24478a 100%);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 
-.nav-container {
+.nav-inner {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 20px;
   display: flex;
   align-items: center;
-  min-height: 80px;
-  position: relative;
+  justify-content: space-between;
+  width: 100%;
 }
 
-/* Logo qismi */
-.nav-main {
-  display: flex;
-  align-items: center;
-  gap: 40px;
-  flex: 1;
-}
-
-.navbar-logo {
+/* ============================================================
+   BRAND
+   ============================================================ */
+.brand {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 0;
-  min-width: 180px;
+  flex-shrink: 0;
 }
 
-.app-logo {
-  height: 45px;
-  width: auto;
-  border-radius: 8px;
+.logo-img {
+  height: 40px;
+  width: 40px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(99, 102, 241, 0.15));
   transition: transform 0.3s ease;
 }
 
-.app-logo:hover {
-  transform: scale(1.05);
+.logo-img:hover {
+  transform: scale(1.05) rotate(-2deg);
 }
 
-.logo-text {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #e3f2fd;
-  letter-spacing: 0.5px;
+.brand-name {
+  font-size: 22px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
+  position: relative;
 }
 
-/* Asosiy navigatsiya */
+.brand-name::after {
+  content: "•";
+  position: absolute;
+  right: -14px;
+  top: -2px;
+  color: #a855f7;
+  font-size: 28px;
+  -webkit-text-fill-color: #a855f7;
+}
+
+/* ============================================================
+   DESKTOP LINKS
+   ============================================================ */
 .nav-links {
   display: flex;
-  gap: 4px;
   align-items: center;
-}
-
-@media (max-width: 1024px) {
-  .nav-links {
-    display: none;
-  }
+  gap: 8px;
+  flex: 1;
+  justify-content: center;
+  padding: 0 20px;
 }
 
 .nav-link {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 16px;
-  color: #e3f2fd;
+  padding: 10px 20px;
+  border-radius: 12px;
   text-decoration: none;
-  border-radius: 20px;
-  transition: all 0.3s ease;
+  color: #64748b;
   font-weight: 500;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
   white-space: nowrap;
 }
 
 .nav-link:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: white;
+  background: rgba(99, 102, 241, 0.06);
+  color: #1e293b;
   transform: translateY(-1px);
+}
+
+.nav-link.active {
+  background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+  color: #4f46e5;
+  font-weight: 600;
+  box-shadow: 0 2px 12px rgba(99, 102, 241, 0.08);
+}
+
+.nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 3px;
+  background: linear-gradient(90deg, #6366f1, #a855f7);
+  border-radius: 4px;
 }
 
 .nav-icon {
-  font-size: 1rem;
-  opacity: 0.9;
+  font-size: 18px;
+  transition: transform 0.2s ease;
 }
 
-/* Header qismi */
-.app-header {
+.nav-link:hover .nav-icon {
+  transform: scale(1.1);
+}
+
+/* ============================================================
+   DESKTOP RIGHT SECTION
+   ============================================================ */
+.desktop-info {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  flex: 2;
-  gap: 30px;
+  gap: 20px;
+  flex-shrink: 0;
 }
 
-.header-left {
-  text-align: right;
+.clock {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  font-weight: 500;
+  background: rgba(241, 245, 249, 0.6);
+  padding: 6px 14px;
+  border-radius: 40px;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
-.header-left h1 {
-  margin: 0;
-  font-size: 1.4rem;
-  font-weight: 700;
-  background: linear-gradient(45deg, #fff, #e3f2fd);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: 0.5px;
+.clock-icon {
+  font-size: 16px;
+  color: #94a3b8;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 6px 16px 6px 8px;
+  border-radius: 40px;
+  transition: all 0.3s ease;
+  background: rgba(241, 245, 249, 0.4);
+  border: 1px solid transparent;
+}
+
+.user-profile:hover {
+  background: rgba(241, 245, 249, 0.8);
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.avatar-icon {
+  font-size: 28px;
+  color: #94a3b8;
+}
+
+.user-meta {
+  display: flex;
+  flex-direction: column;
   line-height: 1.2;
 }
 
-.header-subtitle {
-  margin: 2px 0 0 0;
-  font-size: 0.75rem;
-  color: #bbdefb;
-  font-weight: 400;
-}
-
-.header-info {
-  display: flex;
-  gap: 15px;
-  align-items: center;
-}
-
-.time-display, .user-info {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
+.user-meta strong {
   font-size: 0.85rem;
-  white-space: nowrap;
-}
-
-.time-display:hover, .user-info:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-1px);
-}
-
-.info-icon {
-  font-size: 1rem;
-  opacity: 0.9;
-}
-
-.user-details {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1px;
-}
-
-.user-details strong {
-  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e293b;
 }
 
 .user-role {
   font-size: 0.7rem;
-  color: #bbdefb;
-  opacity: 0.8;
+  color: #94a3b8;
+  font-weight: 500;
+  text-transform: capitalize;
 }
 
-/* Burger menyu */
-.menu-icon {
-  display: none;
+.logout-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 20px;
   cursor: pointer;
-  padding: 10px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  margin-left: 15px;
-}
-
-.menu-icon:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.icon-menu, .icon-close {
-  font-size: 1.3rem;
-  color: white;
-}
-
-/* Mobil menyu */
-.mobile-menu {
-  position: fixed;
-  top: 0;
-  right: -100%;
-  width: 300px;
-  height: 100vh;
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-  box-shadow: -5px 0 30px rgba(0, 0, 0, 0.3);
-  transition: right 0.3s ease;
-  z-index: 1001;
-  display: flex;
-  flex-direction: column;
-}
-
-.mobile-menu.active {
-  right: 0;
-}
-
-.mobile-menu-header {
-  padding: 25px 20px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(0, 0, 0, 0.1);
+  padding: 8px;
+  border-radius: 40px;
+  transition: all 0.25s ease;
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  background: rgba(241, 245, 249, 0.4);
 }
 
-.mobile-menu-header h3 {
+.logout-btn:hover {
+  background: #fee2e2;
+  color: #ef4444;
+  transform: scale(1.05);
+}
+
+/* ============================================================
+   BURGER MENU TOGGLE
+   ============================================================ */
+.burger {
+  display: none;
+  background: rgba(241, 245, 249, 0.6);
+  border: 1px solid #e2e8f0;
+  font-size: 22px;
+  color: #1e293b;
+  cursor: pointer;
+  padding: 8px 10px;
+  border-radius: 12px;
+  transition: all 0.25s ease;
+}
+
+.burger:hover {
+  background: #e2e8f0;
+  transform: scale(0.95);
+}
+
+/* ============================================================
+   OVERLAY (qorongʻu fon)
+   ============================================================ */
+.overlay {
+  display: none;                    /* default yashirin */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(6px);
+  z-index: 999;
+  animation: fadeIn 0.3s ease;
+}
+
+.overlay.open {
+  display: block;                   /* menyu ochilganda koʻrinadi */
+}
+
+/* ============================================================
+   MOBILE MENU (default: yashirin)
+   ============================================================ */
+.mobile-menu {
+  display: none;                    /* default yashirin */
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 340px;
+  max-width: 90%;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(20px);
+  z-index: 1000;
+  flex-direction: column;
+  box-shadow: -8px 0 40px rgba(0, 0, 0, 0.08);
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  overflow-y: auto;
+  transition: none;                 /* display bilan ishlaganda transition kerak emas */
+}
+
+.mobile-menu.open {
+  display: flex;                    /* menyu ochilganda koʻrinadi */
+}
+
+/* ============================================================
+   MOBILE MENU HEADER
+   ============================================================ */
+.mobile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  flex-shrink: 0;
+}
+
+.mobile-header h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
   margin: 0;
-  color: white;
-  font-size: 1.2rem;
-  font-weight: 600;
+  letter-spacing: -0.3px;
 }
 
-.mobile-menu-links {
-  padding: 20px;
+.mobile-close {
+  background: rgba(241, 245, 249, 0.6);
+  border: none;
+  font-size: 22px;
+  color: #64748b;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.mobile-close:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+  transform: rotate(90deg);
+}
+
+/* ============================================================
+   MOBILE LINKS
+   ============================================================ */
+.mobile-links {
   flex: 1;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
+  overflow-y: auto;
 }
 
 .mobile-link {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  color: #e3f2fd;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 14px;
   text-decoration: none;
-  border-radius: 10px;
-  transition: all 0.3s ease;
+  color: #334155;
   font-weight: 500;
-  font-size: 0.95rem;
+  font-size: 1rem;
+  transition: all 0.2s ease;
 }
 
 .mobile-link:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  transform: translateX(5px);
+  background: rgba(99, 102, 241, 0.06);
+  color: #1e293b;
+}
+
+.mobile-link.active {
+  background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+  color: #4f46e5;
+  font-weight: 600;
 }
 
 .mobile-icon {
-  font-size: 1.1rem;
-  opacity: 0.9;
-  width: 20px;
-  text-align: center;
+  font-size: 20px;
+  opacity: 0.7;
 }
 
-.mobile-menu-divider {
-  height: 1px;
-  background: rgba(255, 255, 255, 0.1);
-  margin: 15px 0;
+.divider {
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+  margin: 12px 0;
 }
 
+/* ============================================================
+   MOBILE USER INFO
+   ============================================================ */
 .mobile-user-info {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 15px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
-  margin: 10px 0;
+  padding: 16px 18px;
+  background: rgba(241, 245, 249, 0.4);
+  border-radius: 16px;
+  margin: 8px 0;
+  backdrop-filter: blur(4px);
 }
 
-.mobile-time, .mobile-user {
+.mobile-clock {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 0.85rem;
-  color: #bbdefb;
-}
-
-.logout-btn {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.1);
-  color: #ff6b6b;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 500;
-  font-size: 0.95rem;
-  margin-top: auto;
-}
-
-.logout-btn:hover {
-  background: rgba(255, 107, 107, 0.1);
-  transform: translateX(5px);
-}
-
-.logout-icon {
-  font-size: 1rem;
-}
-
-.menu-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(5px);
-  z-index: 1000;
-}
-
-/* Responsivlik */
-@media (max-width: 1200px) {
-  .nav-container {
-    padding: 0 15px;
-  }
-  
-  .nav-main {
-    gap: 20px;
-  }
-  
-  .app-header {
-    gap: 20px;
-  }
-  
-  .header-left h1 {
-    font-size: 1.2rem;
-  }
-}
-
-@media (max-width: 1024px) {
-  .app-header {
-    display: none;
-  }
-  
-  .menu-icon {
-    display: flex;
-  }
-  
-  .nav-main {
-    justify-content: space-between;
-    width: 100%;
-  }
-}
-
-@media (max-width: 768px) {
-  .nav-container {
-    min-height: 70px;
-    padding: 0 12px;
-  }
-  
-  .navbar-logo {
-    min-width: auto;
-    gap: 8px;
-  }
-  
-  .app-logo {
-    height: 35px;
-  }
-  
-  .logo-text {
-    font-size: 1rem;
-  }
-  
-  .mobile-menu {
-    width: 280px;
-  }
-}
-
-@media (max-width: 480px) {
-  .navbar-logo {
-    gap: 6px;
-  }
-  
-  .app-logo {
-    height: 32px;
-  }
-  
-  .logo-text {
-    font-size: 0.9rem;
-  }
-  
-  .mobile-menu {
-    width: 100%;
-  }
-  
-  .mobile-menu-header {
-    padding: 20px 15px 15px;
-  }
-  
-  .mobile-menu-links {
-    padding: 15px;
-  }
-}
-
-/* Animatsiyalar */
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.nav-link {
-  animation: slideIn 0.5s ease forwards;
-}
-
-/* Scroll bar stil */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
-}
-
-/* Loading animatsiya */
-.nav-link:nth-child(1) { animation-delay: 0.1s; }
-.nav-link:nth-child(2) { animation-delay: 0.2s; }
-.nav-link:nth-child(3) { animation-delay: 0.3s; }
-.nav-link:nth-child(4) { animation-delay: 0.4s; }
-
-
-
-
-
-
-
-/* Profile picture styles */
-.profile-picture {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  object-fit: cover;
-  margin-right: 6px;
-}
-
-.mobile-profile-picture {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  object-fit: cover;
-  margin-right: 8px;
-}
-
-/* Modal styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(5px);
-  z-index: 1002;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.user-modal {
-  background: #ffffff;
-  border-radius: 12px;
-  width: 90%;
-  max-width: 500px;
-  padding: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  animation: slideIn 0.3s ease;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #eee;
-}
-
-.modal-header h2 {
-  margin: 0;
-  font-size: 1.4rem;
-  color: #1e3c72;
-}
-
-.modal-close {
-  cursor: pointer;
-  font-size: 1.2rem;
-  color: #666;
-  transition: color 0.3s ease;
-}
-
-.modal-close:hover {
-  color: #1e3c72;
-}
-
-.modal-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  padding-top: 20px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.form-group label {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #333;
-}
-
-.form-group input,
-.form-group select {
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  transition: border-color 0.3s ease;
-}
-
-.form-group input:focus,
-.form-group select:focus {
-  outline: none;
-  border-color: #1e3c72;
-}
-
-.preview-image {
-  width: 100px;
-  height: 100px;
-  border-radius: 8px;
-  object-fit: cover;
-  margin-top: 10px;
-}
-
-.modal-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  padding-top: 15px;
-}
-
-.save-btn,
-.cancel-btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.save-btn {
-  background: #1e3c72;
-  color: white;
-}
-
-.save-btn:hover {
-  background: #2a5298;
-}
-
-.cancel-btn {
-  background: #f0f0f0;
-  color: #333;
-}
-
-.cancel-btn:hover {
-  background: #e0e0e0;
-}
-
-/* Make user-info clickable */
-.user-info {
-  cursor: pointer;
+  color: #64748b;
+  margin-bottom: 10px;
 }
 
 .mobile-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   cursor: pointer;
 }
 
-/* Responsive modal styles */
+.mobile-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.mobile-user span {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #0f172a;
+}
+
+.mobile-user small {
+  display: block;
+  font-weight: 400;
+  font-size: 0.75rem;
+  opacity: 0.6;
+  color: #64748b;
+}
+
+.mobile-logout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  background: #fee2e2;
+  color: #ef4444;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  margin-top: 12px;
+}
+
+.mobile-logout:hover {
+  background: #fecaca;
+  transform: scale(0.98);
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+/* Planshet va mobil – menyu ko‘rsatiladi */
+@media (max-width: 1024px) {
+  .nav-links {
+    display: none;
+  }
+  .desktop-info {
+    display: none;
+  }
+  .burger {
+    display: flex;
+  }
+  .navbar {
+    height: 64px;
+    padding: 0 20px;
+  }
+}
+
+/* Desktop – mobil menyu va overlay butunlay yashiriladi */
+@media (min-width: 1025px) {
+  .burger {
+    display: none;
+  }
+  .mobile-menu {
+    display: none !important;    /* desktopda hech qachon ko‘rinmaydi */
+  }
+  .overlay {
+    display: none !important;
+  }
+}
+
+/* Kichik telefon */
 @media (max-width: 480px) {
-  .user-modal {
-    width: 95%;
-    padding: 15px;
+  .navbar {
+    height: 56px;
+    padding: 0 16px;
   }
-
-  .modal-header h2 {
-    font-size: 1.2rem;
+  .logo-img {
+    height: 32px;
+    width: 32px;
   }
-
-  .preview-image {
-    width: 80px;
-    height: 80px;
+  .brand-name {
+    font-size: 18px;
+  }
+  .brand-name::after {
+    display: none;
+  }
+  .mobile-menu {
+    width: 300px;
+    max-width: 90%;
   }
 }
