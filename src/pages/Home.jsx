@@ -15,7 +15,6 @@ const Home = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [selectedCategory, setSelectedCategory] = useState("all");
 
-  // URL dan tab parametrini o'qish
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get("tab");
@@ -36,7 +35,6 @@ const Home = () => {
     if (!table) return;
     if (table.orders.length === 0) {
       setActiveTab("menu");
-      // URL ni yangilash (ixtiyoriy)
       navigate("/?tab=menu", { replace: true });
     } else {
       setActiveTab("order");
@@ -44,7 +42,6 @@ const Home = () => {
     }
   }, [tables, selectTable, navigate]);
 
-  // Tab tugmalari
   const tabs = [
     { key: "dashboard", label: "Bosh sahifa", icon: <FaHome /> },
     { key: "tables", label: "Stollar", icon: <FaChair /> },
@@ -61,7 +58,6 @@ const Home = () => {
 
   const handleTabChange = (key) => {
     setActiveTab(key);
-    // URL ni yangilash (faqat "/" da)
     if (key === "dashboard") {
       navigate("/", { replace: true });
     } else {

@@ -29,8 +29,7 @@ const TableList = ({ onSelectTable }) => {
     const matchStatus = filter === "all" || table.status === filter;
     const matchSearch =
       table.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (table.waiter &&
-        table.waiter.toLowerCase().includes(searchQuery.toLowerCase()));
+      (table.waiter && table.waiter.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchStatus && matchSearch;
   });
 
@@ -91,9 +90,7 @@ const TableList = ({ onSelectTable }) => {
 
       <div className="tables-grid-container">
         {filteredTables.map((table) => {
-          const total =
-            table.orders?.reduce((sum, o) => sum + o.price * o.quantity, 0) ||
-            0;
+          const total = table.orders?.reduce((sum, o) => sum + o.price * o.quantity, 0) || 0;
           const orderCount = table.orders?.length || 0;
           const isSelected = selectedTableId === table.id;
           const seats = table.seats || 4;
@@ -101,18 +98,12 @@ const TableList = ({ onSelectTable }) => {
           return (
             <div
               key={table.id}
-              className={`table-card ${getStatusClass(table.status)} ${
-                isSelected ? "selected" : ""
-              }`}
+              className={`table-card ${getStatusClass(table.status)} ${isSelected ? "selected" : ""}`}
               onClick={() => handleTableClick(table.id)}
             >
               <div className="table-card-header">
                 <span className="table-name">{table.name}</span>
-                <span
-                  className={`table-status-badge ${getStatusClass(
-                    table.status
-                  )}`}
-                >
+                <span className={`table-status-badge ${getStatusClass(table.status)}`}>
                   {getStatusIcon(table.status)} {table.status}
                 </span>
               </div>
@@ -144,42 +135,27 @@ const TableList = ({ onSelectTable }) => {
 
               <div className="table-card-actions">
                 {table.status === "Bo'sh" && (
-                  <button
-                    className="btn-action btn-free"
-                    onClick={(e) => e.stopPropagation()}
-                  >
+                  <button className="btn-action btn-free" onClick={(e) => e.stopPropagation()}>
                     Band qilish
                   </button>
                 )}
                 {table.status === "Band" && (
                   <>
-                    <button
-                      className="btn-action btn-order"
-                      onClick={(e) => e.stopPropagation()}
-                    >
+                    <button className="btn-action btn-order" onClick={(e) => e.stopPropagation()}>
                       Buyurtma
                     </button>
-                    <button
-                      className="btn-action btn-pay"
-                      onClick={(e) => e.stopPropagation()}
-                    >
+                    <button className="btn-action btn-pay" onClick={(e) => e.stopPropagation()}>
                       Hisob
                     </button>
                   </>
                 )}
                 {table.status === "Band qilingan" && (
-                  <button
-                    className="btn-action btn-reserve"
-                    onClick={(e) => e.stopPropagation()}
-                  >
+                  <button className="btn-action btn-reserve" onClick={(e) => e.stopPropagation()}>
                     Qabul qilish
                   </button>
                 )}
                 {table.status === "Tozalanmoqda" && (
-                  <button
-                    className="btn-action btn-clean"
-                    onClick={(e) => e.stopPropagation()}
-                  >
+                  <button className="btn-action btn-clean" onClick={(e) => e.stopPropagation()}>
                     Tozalash
                   </button>
                 )}

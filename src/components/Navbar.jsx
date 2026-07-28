@@ -1,4 +1,3 @@
-// src/components/Navbar.jsx
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
@@ -11,7 +10,6 @@ import {
   FaChartBar,
   FaUserCog,
   FaUserTie,
-  FaBell
 } from "react-icons/fa";
 import { MdAccessTime, MdPerson } from "react-icons/md";
 import "./Navbar.css";
@@ -127,13 +125,11 @@ function Navbar() {
     <>
       <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
         <div className="nav-inner">
-          {/* Logo */}
           <div className="brand">
             <img src={logo} alt="Logo" className="logo-img" />
             <span className="brand-name">SDK System</span>
           </div>
 
-          {/* Desktop links */}
           <div className="nav-links">
             {(isAdmin || isWaiter) && (
               <Link to="/" className={`nav-link ${location.pathname === "/" ? "active" : ""}`}>
@@ -167,7 +163,6 @@ function Navbar() {
             )}
           </div>
 
-          {/* Desktop right section */}
           <div className="desktop-info">
             <span className="clock">
               <MdAccessTime className="clock-icon" />
@@ -196,16 +191,13 @@ function Navbar() {
             </button>
           </div>
 
-          {/* Burger button */}
           <button className="burger" onClick={() => setMenuOpen(!menuOpen)}>
             {menuOpen ? <FaTimes /> : <FaBars />}
           </button>
         </div>
 
-        {/* Overlay */}
-        {menuOpen && <div className="overlay" onClick={() => setMenuOpen(false)} />}
+        {menuOpen && <div className="overlay open" onClick={() => setMenuOpen(false)} />}
 
-        {/* Mobile menu */}
         <div className={`mobile-menu ${menuOpen ? "open" : ""}`}>
           <div className="mobile-header">
             <h3>Menyu</h3>
@@ -268,7 +260,6 @@ function Navbar() {
         </div>
       </nav>
 
-      {/* Modal */}
       {showUserModal && (
         <div className="modal-overlay" onClick={() => setShowUserModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>

@@ -64,7 +64,7 @@
 
 .table-search-box:focus-within {
   border-color: #4f46e5;
-  box-shadow: 0 0 0 3px rgba(79,70,229,0.08);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.08);
 }
 
 .table-search-box .search-icon {
@@ -96,7 +96,7 @@
   background: white;
   border-radius: 14px;
   padding: 16px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
   border: 1px solid #f1f5f9;
   transition: all 0.25s ease;
   cursor: pointer;
@@ -104,12 +104,12 @@
 
 .table-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
 }
 
 .table-card.selected {
   border-color: #4f46e5;
-  box-shadow: 0 0 0 3px rgba(79,70,229,0.15);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
 }
 
 .table-card-header {

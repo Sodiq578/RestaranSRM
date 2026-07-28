@@ -1,4 +1,3 @@
-// src/components/Dashboard.jsx
 import React, { useContext, useMemo } from "react";
 import { AppContext } from "../context/AppContext";
 import { MdAttachMoney, MdReceipt, MdTableRestaurant, MdStar, MdAccessTime } from "react-icons/md";
@@ -57,7 +56,6 @@ const Dashboard = () => {
         <span className="dashboard-date">{today}</span>
       </div>
 
-      {/* Stats kartalari */}
       <div className="stats">
         <div className="stat revenue">
           <div className="stat-icon"><MdAttachMoney /></div>
@@ -89,7 +87,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Statuslar qatori */}
       <div className="status-bar">
         <div className="status free"><span className="dot"></span>Bo'sh: {stats.freeTables}</div>
         <div className="status occupied"><span className="dot"></span>Band: {stats.occupiedTables}</div>
@@ -97,7 +94,6 @@ const Dashboard = () => {
         <div className="status cleaning"><span className="dot"></span>Tozalanmoqda: {stats.cleaningTables}</div>
       </div>
 
-      {/* Eng ko‘p sotilganlar */}
       <div className="section">
         <h4 className="section-title"><MdStar className="section-icon" /> Eng ko'p sotilgan taomlar</h4>
         <div className="bestsellers">
@@ -115,7 +111,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* So‘nggi buyurtmalar */}
       <div className="section">
         <h4 className="section-title"><MdAccessTime className="section-icon" /> So'nggi buyurtmalar</h4>
         <div className="recent">

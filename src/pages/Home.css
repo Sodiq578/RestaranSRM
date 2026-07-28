@@ -15,7 +15,7 @@
   top: 72px;
   z-index: 100;
   flex-wrap: wrap;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
 }
 
 .home-tab-btn {
@@ -57,7 +57,7 @@
   border-radius: 14px;
   padding: 14px;
   margin: 0 14px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .home-category-list {
@@ -108,7 +108,7 @@
   border-radius: 14px;
   padding: 14px;
   margin: 0 14px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 @keyframes fadeIn {

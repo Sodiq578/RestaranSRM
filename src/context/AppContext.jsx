@@ -1,9 +1,21 @@
-// src/context/AppContext.js
-import React, { createContext, useState, useEffect } from "react";
+// src/context/AppContext.jsx
+import React, { createContext, useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import jsPDF from "jspdf";
-import { formatPrice, formatItemsList } from "../utils/helpers";
+import { 
+  formatPrice, 
+  formatItemsList,
+  generateId,
+  formatOrderId,
+  safeFormatDate,
+  isValidId,
+  toStringId
+} from "../utils/helpers";
+
+// ============================================================
+// RASMLAR IMPORT
+// ============================================================
 import Osh from "../assets/ovqat/osh.png";
 import Lagmon from "../assets/ovqat/lagmon.jpg";
 import Chuchvara from "../assets/ovqat/chuchvara.png";
@@ -17,84 +29,140 @@ import Sveji from "../assets/ovqat/sveji.png";
 export const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
-  // ==================== STATE ====================
+  // ============================================================
+  // 1. DEFAULT MA'LUMOTLAR (ID LAR STRING)
+  // ============================================================
+  const DEFAULT_TABLES = Array.from({ length: 12 }, (_, i) => ({
+    id: String(i + 1),
+    name: `Stol ${i + 1}`,
+    orders: [],
+    waiter: "",
+    status: "Bo'sh",
+    seats: 4,
+    startTime: null,
+  }));
+
+  const DEFAULT_CATEGORIES = [
+    { id: "1", name: "Asosiy taom" },
+    { id: "2", name: "Salat" },
+    { id: "3", name: "Nonushta" },
+    { id: "4", name: "Ichimlik" },
+    { id: "5", name: "Desert" },
+  ];
+
+  const DEFAULT_MENU = [
+    { id: "1", name: "Osh", price: 25000, category: "Asosiy taom", isBestSeller: true, image: Osh },
+    { id: "2", name: "Lag'mon", price: 20000, category: "Asosiy taom", isBestSeller: false, image: Lagmon },
+    { id: "3", name: "Chuchvara", price: 18000, category: "Asosiy taom", isBestSeller: false, image: Chuchvara },
+    { id: "4", name: "Manti", price: 19000, category: "Asosiy taom", isBestSeller: false, image: Manti },
+    { id: "5", name: "Norin", price: 15000, category: "Asosiy taom", isBestSeller: true, image: Norin },
+    { id: "6", name: "Salat Olivye", price: 12000, category: "Salat", isBestSeller: false, image: Olive },
+    { id: "7", name: "Shashlik", price: 22000, category: "Asosiy taom", isBestSeller: false, image: Shashlik },
+    { id: "8", name: "Somsa", price: 8000, category: "Nonushta", isBestSeller: false, image: Somsa },
+    { id: "9", name: "Salat Sveji", price: 10000, category: "Salat", isBestSeller: false, image: Sveji },
+  ];
+
+  // ============================================================
+  // 2. STATE
+  // ============================================================
   const [tables, setTables] = useState(() => {
     const saved = localStorage.getItem("tables");
-    return saved ? JSON.parse(saved) : Array.from({ length: 12 }, (_, i) => ({
-      id: i + 1,
-      name: `Stol ${i + 1}`,
-      orders: [],
-      waiter: "",
-      status: "Bo'sh",
-      seats: 4,
-      startTime: null,
-    }));
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.length > 0) return parsed;
+      } catch (e) { /* ignore */ }
+    }
+    return DEFAULT_TABLES;
   });
 
   const [categories, setCategories] = useState(() => {
     const saved = localStorage.getItem("categories");
-    return saved ? JSON.parse(saved) : [
-      { id: 1, name: "Asosiy taom" },
-      { id: 2, name: "Salat" },
-      { id: 3, name: "Nonushta" },
-      { id: 4, name: "Ichimlik" },
-      { id: 5, name: "Desert" },
-    ];
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.length > 0) return parsed;
+      } catch (e) { /* ignore */ }
+    }
+    return DEFAULT_CATEGORIES;
+  });
+
+  const [menu, setMenu] = useState(() => {
+    const saved = localStorage.getItem("menu");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.length > 0) return parsed;
+      } catch (e) { /* ignore */ }
+    }
+    return DEFAULT_MENU;
   });
 
   const [selectedTableId, setSelectedTableId] = useState(null);
   const [user, setUser] = useState(null);
   const [ordersHistory, setOrdersHistory] = useState(() => {
     const saved = localStorage.getItem("ordersHistory");
-    return saved ? JSON.parse(saved) : [];
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) { return []; }
+    }
+    return [];
   });
   const [sentOrders, setSentOrders] = useState(() => {
     const saved = localStorage.getItem("sentOrders");
-    return saved ? JSON.parse(saved) : {};
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) { return {}; }
+    }
+    return {};
   });
   const [dailyReport, setDailyReport] = useState(() => {
     const saved = localStorage.getItem("dailyReport");
-    return saved ? JSON.parse(saved) : { ordersCount: 0, totalRevenue: 0, bestSellers: [] };
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) { return { ordersCount: 0, totalRevenue: 0, bestSellers: [] }; }
+    }
+    return { ordersCount: 0, totalRevenue: 0, bestSellers: [] };
   });
   const [lastMessageId, setLastMessageId] = useState(() => {
     const saved = localStorage.getItem("lastMessageId");
-    return saved ? JSON.parse(saved) : null;
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) { return null; }
+    }
+    return null;
   });
   const [lastMessageDate, setLastMessageDate] = useState(() => {
     const saved = localStorage.getItem("lastMessageDate");
-    return saved ? JSON.parse(saved) : null;
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) { return null; }
+    }
+    return null;
   });
-
-  const [menu, setMenu] = useState(() => {
-    const saved = localStorage.getItem("menu");
-    return saved ? JSON.parse(saved) : [
-      { id: 1, name: "Osh", price: 25000, category: "Asosiy taom", isBestSeller: true, image: Osh },
-      { id: 2, name: "Lag'mon", price: 20000, category: "Asosiy taom", isBestSeller: false, image: Lagmon },
-      { id: 3, name: "Chuchvara", price: 18000, category: "Asosiy taom", isBestSeller: false, image: Chuchvara },
-      { id: 4, name: "Manti", price: 19000, category: "Asosiy taom", isBestSeller: false, image: Manti },
-      { id: 5, name: "Norin", price: 15000, category: "Asosiy taom", isBestSeller: true, image: Norin },
-      { id: 6, name: "Salat Olivye", price: 12000, category: "Salat", isBestSeller: false, image: Olive },
-      { id: 7, name: "Shashlik", price: 22000, category: "Asosiy taom", isBestSeller: false, image: Shashlik },
-      { id: 8, name: "Somsa", price: 8000, category: "Nonushta", isBestSeller: false, image: Somsa },
-      { id: 9, name: "Salat Sveji", price: 10000, category: "Salat", isBestSeller: false, image: Sveji },
-    ];
-  });
-
   const [kitchenOrders, setKitchenOrders] = useState(() => {
     const saved = localStorage.getItem("kitchenOrders");
-    return saved ? JSON.parse(saved) : [];
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) { return []; }
+    }
+    return [];
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [notifications, setNotifications] = useState(() => {
+    const saved = localStorage.getItem("notifications");
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) { return []; }
+    }
+    return [];
   });
 
-  const [isLoading, setIsLoading] = useState(false);
-
-  // ==================== TELEGRAM ====================
+  // ============================================================
+  // 3. TELEGRAM KONFIGURATSIYA
+  // ============================================================
   const TELEGRAM_BOT_TOKEN = "7885205848:AAEcgs2vXjZqyV40f6Jvl8Rj1OMq0r7QGkA";
   const MAIN_REPORTING_CHAT_ID = "-4646692596";
   const BAR_CHAT_ID = "-4646692596";
   const SALATCHILAR_CHAT_ID = "-4753754534";
   const OSHXONA_CHAT_ID = "-4686557731";
 
-  // ==================== LOCALSTORAGE ====================
+  // ============================================================
+  // 4. LOCALSTORAGE SYNC
+  // ============================================================
   useEffect(() => {
     localStorage.setItem("tables", JSON.stringify(tables));
     localStorage.setItem("categories", JSON.stringify(categories));
@@ -105,13 +173,16 @@ export const AppProvider = ({ children }) => {
     localStorage.setItem("lastMessageDate", JSON.stringify(lastMessageDate));
     localStorage.setItem("sentOrders", JSON.stringify(sentOrders));
     localStorage.setItem("kitchenOrders", JSON.stringify(kitchenOrders));
-  }, [tables, categories, ordersHistory, menu, dailyReport, lastMessageId, lastMessageDate, sentOrders, kitchenOrders]);
+    localStorage.setItem("notifications", JSON.stringify(notifications));
+  }, [tables, categories, ordersHistory, menu, dailyReport, lastMessageId, lastMessageDate, sentOrders, kitchenOrders, notifications]);
 
-  // ==================== TELEGRAM FUNKSIYALAR ====================
-  const sendTelegramMessage = async (text, chatId, options = {}) => {
+  // ============================================================
+  // 5. TELEGRAM FUNKSIYALAR
+  // ============================================================
+  const sendTelegramMessage = useCallback(async (text, chatId, options = {}) => {
     if (!text || !chatId) {
-      toast.error("Xabar matni yoki chat ID bo'sh!");
-      throw new Error("Xabar matni yoki chat ID bo'sh");
+      console.warn('Xabar matni yoki chat ID bo\'sh');
+      return null;
     }
     try {
       const response = await axios.post(
@@ -124,15 +195,14 @@ export const AppProvider = ({ children }) => {
         },
         { timeout: 5000 }
       );
-      return response.data.result.message_id;
+      return response.data.result?.message_id || null;
     } catch (error) {
       console.error("Telegram xatosi:", error.response?.data || error.message);
-      toast.error("Telegram xabarni yuborib bo'lmadi!");
-      throw error;
+      return null;
     }
-  };
+  }, []);
 
-  const editTelegramMessage = async (messageId, text) => {
+  const editTelegramMessage = useCallback(async (messageId, text) => {
     try {
       await axios.post(
         `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageText`,
@@ -146,114 +216,270 @@ export const AppProvider = ({ children }) => {
       );
     } catch (error) {
       console.error("Telegram tahrirlash xatosi:", error.response?.data || error.message);
-      toast.error("Telegram xabarni tahrirlab bo'lmadi!");
     }
-  };
+  }, []);
 
-  // ==================== MENU FUNKSIYALAR ====================
-  const addMenuItem = (item) => {
+  // ============================================================
+  // 6. NOTIFIKATSIYA FUNKSIYALAR
+  // ============================================================
+  const sendSystemNotification = useCallback((title, message, type = 'info') => {
+    toast[type](message, {
+      position: "top-right",
+      autoClose: 8000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      icon: type === 'success' ? '✅' : type === 'warning' ? '⚠️' : '🔔'
+    });
+
+    if (Notification.permission === 'granted') {
+      try {
+        const notification = new Notification(title, {
+          body: message,
+          icon: '/logo192.png',
+          tag: 'order-notification',
+          requireInteraction: true,
+          silent: false,
+          vibrate: [200, 100, 200]
+        });
+        setTimeout(() => notification.close(), 10000);
+      } catch (error) {
+        console.log('Browser notification error:', error);
+      }
+    } else if (Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  const sendWaiterNotification = useCallback(async (order) => {
+    const { tableName, waiter, items, tableId } = order;
+    
+    const messageText = `
+🔔 <b>BUYURTMA TAYYOR!</b>
+🍽️ <b>Stol:</b> ${tableName}
+👨‍🍳 <b>Ofitsiant:</b> ${waiter || 'Belgilanmagan'}
+📋 <b>Buyurtmalar:</b>
+${items.map(item => `  • ${item.name} x${item.quantity}`).join('\n')}
+🕒 <b>Vaqt:</b> ${new Date().toLocaleString('uz-UZ')}
+
+⚠️ <b>DIQQAT!</b> Buyurtma tayyor! Iltimos, stolga xizmat qiling!
+  `;
+
+    try {
+      await sendTelegramMessage(messageText, MAIN_REPORTING_CHAT_ID);
+    } catch (error) {
+      console.error('Telegram xatosi:', error);
+    }
+
+    sendSystemNotification(
+      '🍽️ Buyurtma tayyor!',
+      `${tableName} stolidagi buyurtma tayyor! Ofitsiant: ${waiter || 'Belgilanmagan'}`,
+      'success'
+    );
+
+    if (Notification.permission === 'granted') {
+      try {
+        const notification = new Notification('🍽️ Buyurtma tayyor!', {
+          body: `${tableName} stolidagi buyurtma tayyor!`,
+          icon: '/logo192.png',
+          tag: `order-ready-${tableId}`,
+          requireInteraction: true,
+          vibrate: [200, 100, 200, 100, 200]
+        });
+        setTimeout(() => notification.close(), 10000);
+      } catch (error) {
+        console.log('Notification error:', error);
+      }
+    }
+
+    try {
+      const audio = new Audio('/tayyor.mp3');
+      audio.volume = 1.0;
+      audio.play().catch(() => {});
+    } catch (error) {
+      console.log('Audio error:', error);
+    }
+  }, [sendTelegramMessage, sendSystemNotification]);
+
+  const sendNewOrderNotification = useCallback(async (tableName, items, waiter) => {
+    const message = `
+🔔 <b>YANGI BUYURTMA!</b>
+🍽️ <b>Stol:</b> ${tableName}
+👨‍🍳 <b>Ofitsiant:</b> ${waiter || 'Belgilanmagan'}
+📋 <b>Buyurtmalar:</b>
+${items.map(item => `  • ${item.name} x${item.quantity}`).join('\n')}
+🕒 <b>Vaqt:</b> ${new Date().toLocaleString('uz-UZ')}
+  `;
+
+    try {
+      await sendTelegramMessage(message, MAIN_REPORTING_CHAT_ID);
+    } catch (error) {
+      console.error('Telegram xatosi:', error);
+    }
+
+    sendSystemNotification(
+      '📋 Yangi buyurtma!',
+      `${tableName} stolidan yangi buyurtma!`,
+      'info'
+    );
+
+    try {
+      const audio = new Audio('/notification.mp3');
+      audio.volume = 0.7;
+      audio.play().catch(() => {});
+    } catch (error) {
+      console.log('Audio error:', error);
+    }
+  }, [sendTelegramMessage, sendSystemNotification]);
+
+  const addNotification = useCallback((message, type = 'info') => {
+    const newNotification = {
+      id: generateId(),
+      message,
+      type,
+      read: false,
+      createdAt: new Date().toISOString()
+    };
+    setNotifications(prev => [newNotification, ...prev]);
+  }, []);
+
+  const markNotificationAsRead = useCallback((id) => {
+    setNotifications(prev =>
+      prev.map(n => n.id === id ? { ...n, read: true } : n)
+    );
+  }, []);
+
+  const clearNotifications = useCallback(() => {
+    setNotifications([]);
+  }, []);
+
+  // ============================================================
+  // 7. MENYU FUNKSIYALAR
+  // ============================================================
+  const addMenuItem = useCallback((item) => {
     if (!item.name || !item.price || !item.category) {
       toast.error("Iltimos, barcha maydonlarni to'ldiring!");
       return;
     }
-    setMenu([...menu, { id: Date.now(), ...item }]);
+    setMenu(prev => [...prev, { id: generateId(), ...item }]);
     toast.success("Taom qo'shildi!");
-  };
+  }, []);
 
-  const updateMenuItem = (id, updatedItem) => {
+  const updateMenuItem = useCallback((id, updatedItem) => {
     if (!updatedItem.name || !updatedItem.price || !updatedItem.category) {
       toast.error("Iltimos, barcha maydonlarni to'ldiring!");
       return;
     }
-    setMenu(menu.map((item) => (item.id === id ? { ...item, ...updatedItem } : item)));
+    setMenu(prev => prev.map((item) => (item.id === id ? { ...item, ...updatedItem } : item)));
     toast.success("Taom yangilandi!");
-  };
+  }, []);
 
-  const deleteMenuItem = (id) => {
-    setMenu(menu.filter((item) => item.id !== id));
+  const deleteMenuItem = useCallback((id) => {
+    setMenu(prev => prev.filter((item) => item.id !== id));
     toast.success("Taom o'chirildi!");
-  };
+  }, []);
 
-  // ==================== KATEGORIYALAR ====================
-  const addCategory = (name) => {
+  // ============================================================
+  // 8. KATEGORIYALAR
+  // ============================================================
+  const addCategory = useCallback((name) => {
     if (!name || name.trim().length < 2) {
       toast.error("Kategoriya nomi kamida 2 harf bo'lishi kerak!");
       return;
     }
-    if (categories.some((cat) => cat.name.toLowerCase() === name.toLowerCase())) {
+    const trimmedName = name.trim();
+    if (categories.some((cat) => cat.name.toLowerCase() === trimmedName.toLowerCase())) {
       toast.error("Bu kategoriya allaqachon mavjud!");
       return;
     }
-    setCategories([...categories, { id: Date.now(), name }]);
+    setCategories(prev => [...prev, { id: generateId(), name: trimmedName }]);
     toast.success("Kategoriya qo'shildi!");
-  };
+  }, [categories]);
 
-  const updateCategory = (id, name) => {
+  const updateCategory = useCallback((id, name) => {
     if (!name || name.trim().length < 2) {
       toast.error("Kategoriya nomi kamida 2 harf bo'lishi kerak!");
       return;
     }
-    if (categories.some((cat) => cat.id !== id && cat.name.toLowerCase() === name.toLowerCase())) {
+    const trimmedName = name.trim();
+    if (categories.some((cat) => cat.id !== id && cat.name.toLowerCase() === trimmedName.toLowerCase())) {
       toast.error("Bu kategoriya nomi allaqachon mavjud!");
       return;
     }
-    setCategories(categories.map((cat) => (cat.id === id ? { ...cat, name } : cat)));
-    setMenu(menu.map((item) =>
-      item.category === categories.find((cat) => cat.id === id)?.name
-        ? { ...item, category: name }
-        : item
-    ));
+    const oldCategory = categories.find((cat) => cat.id === id);
+    setCategories(prev => prev.map((cat) => (cat.id === id ? { ...cat, name: trimmedName } : cat)));
+    if (oldCategory) {
+      setMenu(prev => prev.map((item) =>
+        item.category === oldCategory.name ? { ...item, category: trimmedName } : item
+      ));
+    }
     toast.success("Kategoriya yangilandi!");
-  };
+  }, [categories]);
 
-  const deleteCategory = (id) => {
+  const deleteCategory = useCallback((id) => {
     const category = categories.find((cat) => cat.id === id);
     if (menu.some((item) => item.category === category?.name)) {
       toast.error("Bu kategoriyada taomlar mavjud, o'chirib bo'lmaydi!");
       return;
     }
-    setCategories(categories.filter((cat) => cat.id !== id));
+    setCategories(prev => prev.filter((cat) => cat.id !== id));
     toast.success("Kategoriya o'chirildi!");
-  };
+  }, [categories, menu]);
 
-  // ==================== STOL FUNKSIYALAR ====================
-  const addTable = (name) => {
+  // ============================================================
+  // 9. STOL FUNKSIYALAR
+  // ============================================================
+  const addTable = useCallback((name) => {
     if (!name || name.trim().length < 2) {
       toast.error("Stol nomi kamida 2 harf bo'lishi kerak!");
       return;
     }
-    if (tables.some((table) => table.name.toLowerCase() === name.toLowerCase())) {
+    const trimmedName = name.trim();
+    if (tables.some((table) => table.name.toLowerCase() === trimmedName.toLowerCase())) {
       toast.error("Bu stol nomi allaqachon mavjud!");
       return;
     }
-    setTables([...tables, { id: Date.now(), name, orders: [], waiter: "", status: "Bo'sh", seats: 4, startTime: null }]);
+    setTables(prev => [...prev, {
+      id: generateId(),
+      name: trimmedName,
+      orders: [],
+      waiter: "",
+      status: "Bo'sh",
+      seats: 4,
+      startTime: null
+    }]);
     toast.success("Stol qo'shildi!");
-  };
+  }, [tables]);
 
-  const deleteTable = (id) => {
+  const deleteTable = useCallback((id) => {
     const table = tables.find((t) => t.id === id);
     if (table && table.orders.length > 0) {
       toast.error("Bu stolda faol buyurtmalar mavjud, o'chirib bo'lmaydi!");
       return;
     }
-    setTables(tables.filter((table) => table.id !== id));
+    setTables(prev => prev.filter((table) => table.id !== id));
     toast.success("Stol o'chirildi!");
-  };
+  }, [tables]);
 
-  const updateTableWaiter = (id, waiter) => {
+  const updateTableWaiter = useCallback((id, waiter) => {
     if (!waiter || waiter.trim().length < 2) {
       toast.error("Ofitsiant ismi kamida 2 harf bo'lishi kerak!");
       return;
     }
-    setTables(tables.map((table) => (table.id === id ? { ...table, waiter } : table)));
+    setTables(prev => prev.map((table) =>
+      table.id === id ? { ...table, waiter: waiter.trim() } : table
+    ));
     toast.success("Ofitsiant yangilandi!");
-  };
+  }, []);
 
-  const updateTableStatus = (id, status) => {
-    setTables(tables.map((table) => (table.id === id ? { ...table, status } : table)));
-  };
+  const updateTableStatus = useCallback((id, status) => {
+    setTables(prev => prev.map((table) =>
+      table.id === id ? { ...table, status } : table
+    ));
+  }, []);
 
-  const selectTable = (tableId) => {
+  const selectTable = useCallback((tableId) => {
     setSelectedTableId(tableId);
     const table = tables.find(t => t.id === tableId);
     if (table && table.status !== "Bo'sh" && !table.startTime) {
@@ -261,10 +487,63 @@ export const AppProvider = ({ children }) => {
         t.id === tableId ? { ...t, startTime: new Date().toISOString() } : t
       ));
     }
-  };
+  }, [tables]);
 
-  // ==================== BUYURTMA FUNKSIYALAR ====================
-  const addToOrder = (item) => {
+  // ============================================================
+  // 10. BUYURTMA FUNKSIYALAR (TUZATILGAN)
+  // ============================================================
+
+  /**
+   * ✅ addOrder - MenuItem dan chaqiriladi
+   * 🔥 FAQAT STOLGA BUYURTMA QO'SHADI (Oshxonaga EMAS!)
+   * Oshxonaga yuborish uchun sendOrdersToPreparation ishlatiladi
+   */
+  const addOrder = useCallback((tableId, orderData) => {
+    const table = tables.find((t) => t.id === tableId);
+    if (!table) {
+      toast.error("Stol topilmadi!");
+      return;
+    }
+
+    // Buyurtma tayyorlash
+    const items = orderData.items.map(item => ({
+      ...item,
+      quantity: item.quantity || 1,
+      comment: item.comment || ""
+    }));
+
+    // ✅ Stolga buyurtma qo'shish (FAQAT stolga, oshxonaga EMAS)
+    setTables((prev) =>
+      prev.map((t) =>
+        t.id === tableId
+          ? {
+              ...t,
+              orders: [...t.orders, ...items],
+              status: "Zakaz qo'shildi",
+              startTime: t.startTime || new Date().toISOString(),
+            }
+          : t
+      )
+    );
+
+    // ❌ Oshxonaga avtomatik yuborilmaydi
+    // ❌ Telegram xabar yuborilmaydi
+    // ❌ kitchenOrders ga qo'shilmaydi
+
+    toast.success(`✅ ${items.length} ta buyurtma stolga qo'shildi!`);
+    
+    // Faqat bildirishnoma
+    addNotification(
+      `📋 ${table.name} stoliga ${items.length} ta buyurtma qo'shildi`,
+      'info'
+    );
+  }, [tables, addNotification]);
+
+  /**
+   * addToOrder - TableList dan chaqiriladi (eski usul)
+   * Stolga bitta taom qo'shish uchun
+   */
+  const addToOrder = useCallback((item) => {
     if (!selectedTableId) {
       toast.error("Iltimos, avval stol tanlang!");
       return;
@@ -281,7 +560,10 @@ export const AppProvider = ({ children }) => {
           let newOrders;
           if (existingItemIndex >= 0) {
             newOrders = [...t.orders];
-            newOrders[existingItemIndex].quantity += 1;
+            newOrders[existingItemIndex] = {
+              ...newOrders[existingItemIndex],
+              quantity: newOrders[existingItemIndex].quantity + 1
+            };
           } else {
             const menuItem = menu.find((m) => m.id === item.id);
             newOrders = [
@@ -300,9 +582,9 @@ export const AppProvider = ({ children }) => {
       })
     );
     toast.success(`${item.name} qo'shildi!`);
-  };
+  }, [selectedTableId, menu]);
 
-  const updateOrder = (tableId, index, quantity, comment = "") => {
+  const updateOrder = useCallback((tableId, index, quantity, comment = "") => {
     if (quantity < 1) {
       toast.error("Miqdor 1 dan kam bo'lmasligi kerak!");
       return;
@@ -311,7 +593,7 @@ export const AppProvider = ({ children }) => {
       toast.error("Izoh kamida 3 harf bo'lishi kerak!");
       return;
     }
-    const formattedComment = comment.trim().endsWith(".") ? comment.trim() : comment.trim() + ".";
+    const formattedComment = comment.trim() ? comment.trim() + (comment.trim().endsWith(".") ? "" : ".") : "";
     setTables((prev) =>
       prev.map((table) => {
         if (table.id === tableId) {
@@ -329,9 +611,9 @@ export const AppProvider = ({ children }) => {
       })
     );
     toast.success("Buyurtma yangilandi!");
-  };
+  }, []);
 
-  const removeFromOrder = (tableId, index) => {
+  const removeFromOrder = useCallback((tableId, index) => {
     const table = tables.find((t) => t.id === tableId);
     if (!table || !table.orders || index >= table.orders.length) {
       toast.error("Buyurtma topilmadi!");
@@ -357,8 +639,7 @@ export const AppProvider = ({ children }) => {
       const updated = { ...prev };
       if (updated[tableId]) {
         updated[tableId] = updated[tableId].filter(
-          (order) =>
-            !(order.id === removedItem.id && order.quantity === removedItem.quantity)
+          (order) => !(order.id === removedItem.id && order.quantity === removedItem.quantity)
         );
         if (updated[tableId].length === 0) delete updated[tableId];
       }
@@ -366,10 +647,18 @@ export const AppProvider = ({ children }) => {
     });
     toast.success("Buyurtma o'chirildi!");
     return true;
-  };
+  }, [tables]);
 
-  // ==================== OSHXONA FUNKSIYALAR ====================
-  const sendOrdersToPreparation = async (tableId) => {
+  // ============================================================
+  // 11. OSHXONA FUNKSIYALAR
+  // ============================================================
+
+  /**
+   * sendOrdersToPreparation - Oshxonaga yuborish
+   * 🔥 BU FUNKSIYA OSHXONAGA YUBORADI
+   * Ofitsiant "Oshxonaga" tugmasini bosganda chaqiriladi
+   */
+  const sendOrdersToPreparation = useCallback(async (tableId) => {
     const table = tables.find((t) => t.id === tableId);
     if (!table || table.orders.length === 0) {
       toast.error("Buyurtma bo'sh!");
@@ -378,10 +667,7 @@ export const AppProvider = ({ children }) => {
 
     const sentForTable = sentOrders[tableId] || [];
     const newOrders = table.orders.filter(
-      (order) =>
-        !sentForTable.some(
-          (sent) => sent.id === order.id && sent.quantity === order.quantity
-        )
+      (order) => !sentForTable.some((sent) => sent.id === order.id && sent.quantity === order.quantity)
     );
 
     if (newOrders.length === 0 && table.status === "Tayyorlashga yuborildi") {
@@ -390,15 +676,16 @@ export const AppProvider = ({ children }) => {
     }
 
     try {
+      // ✅ Oshxonaga buyurtma qo'shish
       const kitchenOrder = {
-        id: Date.now(),
+        id: generateId(),
         kitchenId: `K${Date.now().toString().slice(-6)}`,
         tableId: table.id,
         tableName: table.name,
         waiter: table.waiter || "Belgilanmagan",
         items: table.orders.map(order => ({ ...order })),
         total: table.orders.reduce((sum, o) => sum + o.price * o.quantity, 0),
-        status: 'preparing',
+        status: 'pending',
         startTime: new Date().toISOString(),
         estimatedReadyTime: new Date(Date.now() + 30 * 60000).toISOString(),
         date: new Date().toISOString()
@@ -406,65 +693,65 @@ export const AppProvider = ({ children }) => {
 
       setKitchenOrders(prev => [...prev, kitchenOrder]);
 
+      // Kategoriyalar bo'yicha ajratish
       const barItems = newOrders.filter((item) => item.category === "Ichimlik");
       const saladItems = newOrders.filter((item) => item.category === "Salat");
       const kitchenItems = newOrders.filter(
-        (item) =>
-          item.category === "Asosiy taom" ||
-          item.category === "Desert" ||
-          item.category === "Other"
+        (item) => item.category === "Asosiy taom" || item.category === "Desert" || item.category === "Other"
       );
 
+      // Bar uchun
       if (barItems.length > 0) {
         const { itemList, comments } = formatItemsList(barItems);
-        const barMessage = `
+        await sendTelegramMessage(`
 <b>🍹 Bar uchun yangi buyurtma</b>
-<b>🍽️ Stol:</b> ${table.name} (ID: ${table.id})
+<b>🍽️ Stol:</b> ${table.name}
 <b>📋 Buyurtmalar:</b>
 ${itemList}${comments}
 <b>👨‍🍳 Ofitsiant:</b> ${table.waiter || "Belgilanmagan"}
 <b>🕒 Vaqt:</b> ${new Date().toLocaleString("uz-UZ")}
-        `;
-        await sendTelegramMessage(barMessage, BAR_CHAT_ID);
+        `, BAR_CHAT_ID);
       }
 
+      // Salatchilar uchun
       if (saladItems.length > 0) {
         const { itemList, comments } = formatItemsList(saladItems);
-        const saladMessage = `
+        await sendTelegramMessage(`
 <b>🥗 Salatchilar uchun yangi buyurtma</b>
-<b>🍽️ Stol:</b> ${table.name} (ID: ${table.id})
+<b>🍽️ Stol:</b> ${table.name}
 <b>📋 Buyurtmalar:</b>
 ${itemList}${comments}
 <b>👨‍🍳 Ofitsiant:</b> ${table.waiter || "Belgilanmagan"}
 <b>🕒 Vaqt:</b> ${new Date().toLocaleString("uz-UZ")}
-        `;
-        await sendTelegramMessage(saladMessage, SALATCHILAR_CHAT_ID);
+        `, SALATCHILAR_CHAT_ID);
       }
 
+      // Oshxona uchun
       if (kitchenItems.length > 0) {
         const { itemList, comments } = formatItemsList(kitchenItems);
-        const kitchenMessage = `
+        await sendTelegramMessage(`
 <b>🍲 Oshxona uchun yangi buyurtma</b>
-<b>🍽️ Stol:</b> ${table.name} (ID: ${table.id})
+<b>🍽️ Stol:</b> ${table.name}
 <b>📋 Buyurtmalar:</b>
 ${itemList}${comments}
 <b>👨‍🍳 Ofitsiant:</b> ${table.waiter || "Belgilanmagan"}
 <b>🕒 Vaqt:</b> ${new Date().toLocaleString("uz-UZ")}
-        `;
-        await sendTelegramMessage(kitchenMessage, OSHXONA_CHAT_ID);
+        `, OSHXONA_CHAT_ID);
       }
 
+      // Asosiy kanalga
       const { itemList, comments } = formatItemsList(table.orders);
-      const fullMessage = `
+      await sendTelegramMessage(`
 <b>📋 Yangi buyurtma</b>
-<b>🍽️ Stol:</b> ${table.name} (ID: ${table.id})
+<b>🍽️ Stol:</b> ${table.name}
 <b>📋 Buyurtmalar:</b>
 ${itemList}${comments}
 <b>👨‍🍳 Ofitsiant:</b> ${table.waiter || "Belgilanmagan"}
 <b>🕒 Vaqt:</b> ${new Date().toLocaleString("uz-UZ")}
 <b>📌 Status:</b> Tayyorlashga yuborildi
-      `;
-      await sendTelegramMessage(fullMessage, MAIN_REPORTING_CHAT_ID);
+      `, MAIN_REPORTING_CHAT_ID);
+
+      sendNewOrderNotification(table.name, table.orders, table.waiter);
 
       setSentOrders((prev) => ({
         ...prev,
@@ -472,9 +759,7 @@ ${itemList}${comments}
       }));
 
       setTables((prev) =>
-        prev.map((t) =>
-          t.id === tableId ? { ...t, status: "Tayyorlashga yuborildi" } : t
-        )
+        prev.map((t) => t.id === tableId ? { ...t, status: "Tayyorlashga yuborildi" } : t)
       );
       toast.success("Buyurtmalar tayyorlashga yuborildi!");
       return true;
@@ -482,113 +767,103 @@ ${itemList}${comments}
       toast.error("Buyurtmalarni yuborishda xato: " + error.message);
       return false;
     }
-  };
+  }, [tables, sentOrders, sendTelegramMessage, sendNewOrderNotification]);
 
-  const startKitchenPreparation = async (orderId) => {
-    const order = ordersHistory.find(o => o.id === orderId);
+  const startKitchenPreparation = useCallback(async (orderId) => {
+    const order = kitchenOrders.find(o => o.id === orderId || o.kitchenId === orderId);
     if (!order) {
       toast.error("Buyurtma topilmadi!");
       return;
     }
 
-    const kitchenOrder = {
-      ...order,
-      kitchenId: `K${Date.now().toString().slice(-4)}`,
-      status: 'preparing',
-      startTime: new Date().toISOString(),
-      estimatedReadyTime: new Date(Date.now() + 30 * 60000).toISOString()
-    };
+    setKitchenOrders(prev =>
+      prev.map(o =>
+        o.id === orderId || o.kitchenId === orderId
+          ? { ...o, status: 'preparing', startTime: new Date().toISOString(), estimatedReadyTime: new Date(Date.now() + 30 * 60000).toISOString() }
+          : o
+      )
+    );
 
-    setKitchenOrders(prev => [...prev, kitchenOrder]);
-
-    const message = `
+    await sendTelegramMessage(`
 🔥 <b>TAYYORLASH BOSHLANDI</b>
-📋 <b>Buyurtma ID:</b> ${kitchenOrder.kitchenId}
+📋 <b>Buyurtma ID:</b> ${order.kitchenId || order.id}
 🍽️ <b>Stol:</b> ${order.tableName}
 👨‍🍳 <b>Ofitsiant:</b> ${order.waiter || 'Belgilanmagan'}
 ⏰ <b>Boshlanish vaqti:</b> ${new Date().toLocaleString('uz-UZ')}
-⏱️ <b>Taxminiy tayyor bo'lish:</b> ${new Date(kitchenOrder.estimatedReadyTime).toLocaleString('uz-UZ')}
-
+⏱️ <b>Taxminiy tayyor bo'lish:</b> ${new Date(Date.now() + 30 * 60000).toLocaleString('uz-UZ')}
 <b>📋 Buyurtma:</b>
 ${order.items.map(item => `• ${item.name} x${item.quantity}`).join('\n')}
-    `;
-
-    await sendTelegramMessage(message, MAIN_REPORTING_CHAT_ID);
+    `, MAIN_REPORTING_CHAT_ID);
     toast.success("Tayyorlash boshlandi!");
-  };
+  }, [kitchenOrders, sendTelegramMessage]);
 
-  const markOrderAsReady = async (kitchenId) => {
-    const order = kitchenOrders.find(o => o.kitchenId === kitchenId);
+  const markOrderAsReady = useCallback(async (orderId) => {
+    const order = kitchenOrders.find(o => o.id === orderId || o.kitchenId === orderId);
     if (!order) {
       toast.error("Buyurtma topilmadi!");
       return;
     }
 
     const preparationTime = Math.round((new Date() - new Date(order.startTime)) / 60000);
+    
     setKitchenOrders(prev =>
       prev.map(o =>
-        o.kitchenId === kitchenId
-          ? {
-              ...o,
-              status: 'ready',
-              readyTime: new Date().toISOString(),
-              preparationTime: preparationTime
-            }
+        o.id === orderId || o.kitchenId === orderId
+          ? { ...o, status: 'ready', readyTime: new Date().toISOString(), preparationTime: preparationTime }
           : o
       )
     );
 
-    const message = `
-✅ <b>TAYYOR BO'LDI!</b>
-📋 <b>Buyurtma ID:</b> ${kitchenId}
-🍽️ <b>Stol:</b> ${order.tableName}
-👨‍🍳 <b>Ofitsiant:</b> ${order.waiter || 'Belgilanmagan'}
-⏱️ <b>Tayyorlanish vaqti:</b> ${preparationTime} daqiqa
-🕒 <b>Tayyor bo'lish vaqti:</b> ${new Date().toLocaleString('uz-UZ')}
+    await sendWaiterNotification({
+      tableName: order.tableName,
+      waiter: order.waiter,
+      items: order.items,
+      tableId: order.tableId
+    });
 
-<b>📋 Buyurtma:</b>
-${order.items.map(item => `• ${item.name} x${item.quantity}`).join('\n')}
-    `;
+    toast.success(`✅ ${order.tableName} stolidagi buyurtma tayyor!`);
+  }, [kitchenOrders, sendWaiterNotification]);
 
-    await sendTelegramMessage(message, MAIN_REPORTING_CHAT_ID);
-    toast.success("Buyurtma tayyor deb belgilandi!");
-  };
+  const removeKitchenOrder = useCallback((orderId) => {
+    setKitchenOrders(prev => prev.filter(order => order.id !== orderId && order.kitchenId !== orderId));
+    toast.info('Buyurtma oshxona ro\'yxatidan o\'chirildi');
+  }, []);
 
-  // ==================== BUYURTMA YAKUNLASH ====================
-  const completeOrder = async (tableId, paymentConfirmed = false) => {
+  const updateKitchenOrder = useCallback((orderId, data) => {
+    setKitchenOrders(prev =>
+      prev.map(order => order.id === orderId || order.kitchenId === orderId ? { ...order, ...data } : order)
+    );
+  }, []);
+
+  // ============================================================
+  // 12. BUYURTMA YAKUNLASH
+  // ============================================================
+  const completeOrder = useCallback(async (tableId, paymentConfirmed = false) => {
     const table = tables.find((t) => t.id === tableId);
     if (!table || !table.orders || table.orders.length === 0) {
       toast.error("Buyurtma bo'sh!");
       return false;
     }
 
-    const total = table.orders.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
+    const total = table.orders.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const newOrder = {
-      id: Date.now(),
+      id: generateId(),
       items: [...table.orders],
       total,
-      date: new Date(),
+      date: new Date().toISOString(),
       tableId,
       tableName: table.name,
       waiter: table.waiter,
       status: paymentConfirmed ? "To'lov qilindi" : "To'lov kutilmoqda",
     };
 
-    setOrdersHistory([newOrder, ...ordersHistory]);
+    setOrdersHistory(prev => [newOrder, ...prev]);
     setKitchenOrders(prev => prev.filter(order => order.tableId !== tableId));
 
     setTables((prev) =>
       prev.map((t) =>
         t.id === tableId
-          ? {
-              ...t,
-              orders: [],
-              status: paymentConfirmed ? "Bo'sh" : "To'lov kutilmoqda",
-              startTime: null,
-            }
+          ? { ...t, orders: [], status: paymentConfirmed ? "Bo'sh" : "To'lov kutilmoqda", startTime: null }
           : t
       )
     );
@@ -598,16 +873,15 @@ ${order.items.map(item => `• ${item.name} x${item.quantity}`).join('\n')}
 
     try {
       const { itemList, comments } = formatItemsList(table.orders);
-      const completionMessage = `
+      await sendTelegramMessage(`
 <b>✅ Buyurtma yakunlandi</b>
-<b>🍽️ Stol:</b> ${table.name} (ID: ${table.id})
+<b>🍽️ Stol:</b> ${table.name}
 <b>📋 Buyurtmalar:</b>
 ${itemList}${comments}
 <b>📌 To'lov holati:</b> ${paymentConfirmed ? "To'langan" : "To'lov kutilmoqda"}
 <b>👨‍🍳 Ofitsiant:</b> ${table.waiter || "Belgilanmagan"}
 <b>🕒 Vaqt:</b> ${new Date().toLocaleString("uz-UZ")}
-      `;
-      await sendTelegramMessage(completionMessage, MAIN_REPORTING_CHAT_ID);
+      `, MAIN_REPORTING_CHAT_ID);
       await updateDailyReport();
       toast.success("Buyurtma yakunlandi!");
       return true;
@@ -615,10 +889,9 @@ ${itemList}${comments}
       toast.error("Hisobot yuborishda xato: " + error.message);
       return false;
     }
-  };
+  }, [tables, sendTelegramMessage]);
 
-  // ==================== TO'LOV TASDIQLASH ====================
-  const confirmPayment = async (tableId) => {
+  const confirmPayment = useCallback(async (tableId) => {
     const table = tables.find((t) => t.id === tableId);
     if (!table || table.status !== "To'lov kutilmoqda") {
       toast.error("To'lov tasdiqlash uchun buyurtma mavjud emas!");
@@ -627,15 +900,11 @@ ${itemList}${comments}
 
     setKitchenOrders(prev => prev.filter(order => order.tableId !== tableId));
     setTables((prev) =>
-      prev.map((t) =>
-        t.id === tableId ? { ...t, status: "Bo'sh", orders: [], startTime: null } : t
-      )
+      prev.map((t) => t.id === tableId ? { ...t, status: "Bo'sh", orders: [], startTime: null } : t)
     );
     setOrdersHistory((prev) =>
       prev.map((order) =>
-        order.tableId === tableId && order.status === "To'lov kutilmoqda"
-          ? { ...order, status: "To'lov qilindi" }
-          : order
+        order.tableId === tableId && order.status === "To'lov kutilmoqda" ? { ...order, status: "To'lov qilindi" } : order
       )
     );
     setSelectedTableId(null);
@@ -646,10 +915,9 @@ ${itemList}${comments}
     } catch (error) {
       toast.error("Hisobot yangilashda xato: " + error.message);
     }
-  };
+  }, [tables]);
 
-  // ==================== QARZGA YOZISH ====================
-  const markAsDebt = async (tableId, debtDetails) => {
+  const markAsDebt = useCallback(async (tableId, debtDetails) => {
     if (!debtDetails.amount || !debtDetails.debtorName || !debtDetails.repaymentDate) {
       toast.error("Qarz ma'lumotlari to'liq kiritilmadi!");
       return;
@@ -666,22 +934,18 @@ ${itemList}${comments}
       )
     );
     setTables((prev) =>
-      prev.map((t) =>
-        t.id === tableId ? { ...t, status: "Qarz", orders: [], startTime: null } : t
-      )
+      prev.map((t) => t.id === tableId ? { ...t, status: "Qarz", orders: [], startTime: null } : t)
     );
     setSelectedTableId(null);
 
     try {
       const table = tables.find((t) => t.id === tableId);
-      const order = ordersHistory.find(
-        (o) => o.tableId === tableId && o.status === "To'lov kutilmoqda"
-      );
+      const order = ordersHistory.find((o) => o.tableId === tableId && o.status === "To'lov kutilmoqda");
       if (order) {
         const { itemList, comments } = formatItemsList(order.items);
-        const debtMessage = `
+        await sendTelegramMessage(`
 <b>💳 Qarz sifatida belgilandi</b>
-<b>🍽️ Stol:</b> ${table.name} (ID: ${table.id})
+<b>🍽️ Stol:</b> ${table.name}
 <b>📋 Buyurtmalar:</b>
 ${itemList}${comments}
 <b>💵 Summa:</b> ${formatPrice(debtDetails.amount)}
@@ -691,8 +955,7 @@ ${itemList}${comments}
 <b>📅 To'lov sanasi:</b> ${new Date(debtDetails.repaymentDate).toLocaleDateString("uz-UZ")}
 <b>👨‍🍳 Ofitsiant:</b> ${table.waiter || "Belgilanmagan"}
 <b>🕒 Vaqt:</b> ${new Date().toLocaleString("uz-UZ")}
-        `;
-        await sendTelegramMessage(debtMessage, MAIN_REPORTING_CHAT_ID);
+        `, MAIN_REPORTING_CHAT_ID);
         await updateDailyReport();
         toast.success("Buyurtma qarz sifatida belgilandi!");
       } else {
@@ -701,10 +964,12 @@ ${itemList}${comments}
     } catch (error) {
       toast.error("Qarzni yuborishda xato: " + error.message);
     }
-  };
+  }, [tables, ordersHistory, sendTelegramMessage]);
 
-  // ==================== HISOBOT ====================
-  const updateDailyReport = async () => {
+  // ============================================================
+  // 13. HISOBOT
+  // ============================================================
+  const updateDailyReport = useCallback(async () => {
     const today = new Date().toLocaleDateString("uz-UZ");
     const todayOrders = ordersHistory.filter(
       (order) => new Date(order.date).toLocaleDateString("uz-UZ") === today
@@ -717,12 +982,7 @@ ${itemList}${comments}
     todayOrders.forEach((order) => {
       order.items.forEach((item) => {
         if (!itemSales[item.id]) {
-          itemSales[item.id] = {
-            name: item.name,
-            count: 0,
-            totalQuantity: 0,
-            price: item.price,
-          };
+          itemSales[item.id] = { name: item.name, count: 0, totalQuantity: 0, price: item.price };
         }
         itemSales[item.id].count += 1;
         itemSales[item.id].totalQuantity += item.quantity;
@@ -732,43 +992,32 @@ ${itemList}${comments}
     const bestSellers = Object.values(itemSales)
       .sort((a, b) => b.totalQuantity - a.totalQuantity)
       .slice(0, 3)
-      .map((item) => ({
-        name: item.name,
-        count: item.totalQuantity,
-        total: item.totalQuantity * item.price,
-      }));
+      .map((item) => ({ name: item.name, count: item.totalQuantity, total: item.totalQuantity * item.price }));
 
     setDailyReport({ ordersCount, totalRevenue, bestSellers });
 
     const allItemSalesText = Object.values(itemSales)
       .sort((a, b) => b.totalQuantity - a.totalQuantity)
-      .map(
-        (item, index) =>
-          `${index + 1}. ${item.name} - ${item.totalQuantity} marta`
-      )
+      .map((item, index) => `${index + 1}. ${item.name} - ${item.totalQuantity} marta`)
       .join("\n");
 
     const orderDetailsText = todayOrders
       .map((order, index) => {
         const { itemList, comments } = formatItemsList(order.items);
-        const debtInfo =
-          order.status === "Qarz" && order.debtDetails
-            ? `
+        const debtInfo = order.status === "Qarz" && order.debtDetails ? `
 <b>💳 Qarz ma'lumotlari:</b>
   • Summa: ${formatPrice(order.debtDetails.amount)}
   • Qarzdor: ${order.debtDetails.debtorName}
   • Manzil: ${order.debtDetails.debtorAddress}
-  • To'lov sanasi: ${new Date(order.debtDetails.repaymentDate).toLocaleDateString("uz-UZ")}`
-            : "";
+  • To'lov sanasi: ${new Date(order.debtDetails.repaymentDate).toLocaleDateString("uz-UZ")}` : "";
         return `
 <b>Buyurtma #${index + 1}</b>
 <b>📅 Sana:</b> ${new Date(order.date).toLocaleString("uz-UZ")}
-<b>🍽️ Stol:</b> ${order.tableName} (ID: ${order.tableId})
+<b>🍽️ Stol:</b> ${order.tableName}
 <b>👨‍🍳 Ofitsiant:</b> ${order.waiter || "Belgilanmagan"}
 <b>📋 Buyurtmalar:</b>
 ${itemList}${comments}
-<b>📌 Status:</b> ${order.status}${debtInfo}
-          `;
+<b>📌 Status:</b> ${order.status}${debtInfo}`;
       })
       .join("\n\n");
 
@@ -785,8 +1034,7 @@ ${bestSellers.map((item, index) => `${index + 1}. ${item.name} - ${item.count} m
 ${allItemSalesText || "Hozircha ma'lumot yo'q"}
 <pre>-----------------------------------</pre>
 <b>📋 Buyurtma tafsilotlari:</b>
-${orderDetailsText || "Hozircha buyurtma yo'q"}
-    `;
+${orderDetailsText || "Hozircha buyurtma yo'q"}`;
 
     const isSameDay = lastMessageDate === today;
 
@@ -801,17 +1049,19 @@ ${orderDetailsText || "Hozircha buyurtma yo'q"}
     } catch (error) {
       console.error("Hisobot yuborishda xato:", error);
     }
-  };
+  }, [ordersHistory, lastMessageId, lastMessageDate, sendTelegramMessage, editTelegramMessage]);
 
-  // ==================== CHEK ====================
-  const generateReceiptPDF = (order) => {
+  // ============================================================
+  // 14. CHEK
+  // ============================================================
+  const generateReceiptPDF = useCallback((order) => {
     try {
       const doc = new jsPDF();
       doc.setFontSize(20);
       doc.text("SODIQJON RESTORANI", 105, 20, { align: "center" });
       doc.setFontSize(12);
       doc.text(`Stol: ${order.tableName}`, 15, 40);
-      doc.text(`Sana: ${new Date(order.date).toLocaleString("uz-UZ")}`, 15, 48);
+      doc.text(`Sana: ${safeFormatDate(order.date)}`, 15, 48);
       doc.text("Buyurtmalar:", 15, 60);
       let y = 70;
       order.items.forEach((item) => {
@@ -823,26 +1073,23 @@ ${orderDetailsText || "Hozircha buyurtma yo'q"}
         y += 10;
       });
       doc.text(`Jami: ${formatPrice(order.total)}`, 15, y + 10);
-      doc.save(`Chek_${order.tableName}_${order.id}.pdf`);
+      doc.save(`Chek_${order.tableName}_${formatOrderId(order.id)}.pdf`);
       toast.success("Chek yaratildi!");
     } catch (error) {
       console.error("Chek xatosi:", error);
       toast.error("Chek yaratishda xato!");
     }
-  };
+  }, []);
 
-  // ==================== TOP SELLING ====================
-  const getTopSellingItems = (orders) => {
+  // ============================================================
+  // 15. TOP SELLING
+  // ============================================================
+  const getTopSellingItems = useCallback((orders) => {
     const itemCounts = {};
     orders.forEach((order) => {
       order.items.forEach((item) => {
         if (!itemCounts[item.id]) {
-          itemCounts[item.id] = {
-            count: 0,
-            totalQuantity: 0,
-            name: item.name,
-            price: item.price,
-          };
+          itemCounts[item.id] = { count: 0, totalQuantity: 0, name: item.name, price: item.price };
         }
         itemCounts[item.id].count += 1;
         itemCounts[item.id].totalQuantity += item.quantity;
@@ -851,57 +1098,121 @@ ${orderDetailsText || "Hozircha buyurtma yo'q"}
     return Object.values(itemCounts)
       .sort((a, b) => b.totalQuantity - a.totalQuantity)
       .slice(0, 3);
-  };
+  }, []);
 
-  // ==================== CONTEXT VALUE ====================
-  const value = {
+  // ============================================================
+  // 16. RESET FUNKSIYA
+  // ============================================================
+  const resetData = useCallback(() => {
+    setTables(DEFAULT_TABLES);
+    setCategories(DEFAULT_CATEGORIES);
+    setMenu(DEFAULT_MENU);
+    setOrdersHistory([]);
+    setKitchenOrders([]);
+    setNotifications([]);
+    setDailyReport({ ordersCount: 0, totalRevenue: 0, bestSellers: [] });
+    setSelectedTableId(null);
+    setSentOrders({});
+    setLastMessageId(null);
+    setLastMessageDate(null);
+    localStorage.clear();
+    toast.success("✅ Barcha ma'lumotlar tiklandi!");
+  }, []);
+
+  // ============================================================
+  // 17. CONTEXT VALUE
+  // ============================================================
+  const value = useMemo(() => ({
+    // State
     tables,
     setTables,
+    categories,
+    setCategories,
+    selectedTableId,
+    setSelectedTableId,
+    user,
+    setUser,
+    ordersHistory,
+    setOrdersHistory,
+    sentOrders,
+    setSentOrders,
+    dailyReport,
+    setDailyReport,
+    lastMessageId,
+    setLastMessageId,
+    lastMessageDate,
+    setLastMessageDate,
+    menu,
+    setMenu,
+    kitchenOrders,
+    setKitchenOrders,
+    isLoading,
+    setIsLoading,
+    notifications,
+    setNotifications,
+
+    // Notifications
+    addNotification,
+    markNotificationAsRead,
+    clearNotifications,
+    sendSystemNotification,
+    sendWaiterNotification,
+    sendNewOrderNotification,
+
+    // Tables
     addTable,
     deleteTable,
     updateTableWaiter,
     updateTableStatus,
     selectTable,
-    selectedTableId,
-    setSelectedTableId,
-    menu,
-    setMenu,
+
+    // Menu
     addMenuItem,
     updateMenuItem,
     deleteMenuItem,
-    categories,
-    setCategories,
+
+    // Categories
     addCategory,
     updateCategory,
     deleteCategory,
+
+    // Orders
+    addOrder,
     addToOrder,
     updateOrder,
     removeFromOrder,
     sendOrdersToPreparation,
+    startKitchenPreparation,
+    markOrderAsReady,
+    removeKitchenOrder,
+    updateKitchenOrder,
     completeOrder,
     confirmPayment,
     markAsDebt,
-    kitchenOrders,
-    setKitchenOrders,
-    startKitchenPreparation,
-    markOrderAsReady,
-    ordersHistory,
-    setOrdersHistory,
-    dailyReport,
-    getTopSellingItems,
-    generateReceiptPDF,
-    sendTelegramMessage,
-    user,
-    setUser,
-    isLoading,
-    setIsLoading,
-  };
 
-  return (
-    <AppContext.Provider value={value}>
-      {children}
-    </AppContext.Provider>
-  );
+    // Other
+    generateReceiptPDF,
+    getTopSellingItems,
+    sendTelegramMessage,
+    updateDailyReport,
+    resetData,
+  }), [
+    tables, categories, selectedTableId, user, ordersHistory, sentOrders,
+    dailyReport, lastMessageId, lastMessageDate, menu, kitchenOrders,
+    isLoading, notifications,
+    addNotification, markNotificationAsRead, clearNotifications,
+    sendSystemNotification, sendWaiterNotification, sendNewOrderNotification,
+    addTable, deleteTable, updateTableWaiter, updateTableStatus, selectTable,
+    addMenuItem, updateMenuItem, deleteMenuItem,
+    addCategory, updateCategory, deleteCategory,
+    addOrder, addToOrder, updateOrder, removeFromOrder,
+    sendOrdersToPreparation, startKitchenPreparation, markOrderAsReady,
+    removeKitchenOrder, updateKitchenOrder,
+    completeOrder, confirmPayment, markAsDebt,
+    generateReceiptPDF, getTopSellingItems, sendTelegramMessage, updateDailyReport, resetData
+  ]);
+
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 
 export default AppProvider;

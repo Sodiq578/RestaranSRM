@@ -1,6 +1,3 @@
-/* ============================================================
-   NAVBAR
-   ============================================================ */
 .navbar {
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(12px);
@@ -32,9 +29,6 @@
   width: 100%;
 }
 
-/* ============================================================
-   BRAND
-   ============================================================ */
 .brand {
   display: flex;
   align-items: center;
@@ -75,9 +69,6 @@
   -webkit-text-fill-color: #a855f7;
 }
 
-/* ============================================================
-   DESKTOP LINKS
-   ============================================================ */
 .nav-links {
   display: flex;
   align-items: center;
@@ -136,9 +127,6 @@
   transform: scale(1.1);
 }
 
-/* ============================================================
-   DESKTOP RIGHT SECTION
-   ============================================================ */
 .desktop-info {
   display: flex;
   align-items: center;
@@ -237,9 +225,6 @@
   transform: scale(1.05);
 }
 
-/* ============================================================
-   BURGER MENU TOGGLE
-   ============================================================ */
 .burger {
   display: none;
   background: rgba(241, 245, 249, 0.6);
@@ -257,11 +242,8 @@
   transform: scale(0.95);
 }
 
-/* ============================================================
-   OVERLAY (qorongʻu fon)
-   ============================================================ */
 .overlay {
-  display: none;                    /* default yashirin */
+  display: none;
   position: fixed;
   top: 0;
   left: 0;
@@ -274,14 +256,11 @@
 }
 
 .overlay.open {
-  display: block;                   /* menyu ochilganda koʻrinadi */
+  display: block;
 }
 
-/* ============================================================
-   MOBILE MENU (default: yashirin)
-   ============================================================ */
 .mobile-menu {
-  display: none;                    /* default yashirin */
+  display: none;
   position: fixed;
   top: 0;
   right: 0;
@@ -295,16 +274,12 @@
   box-shadow: -8px 0 40px rgba(0, 0, 0, 0.08);
   border-left: 1px solid rgba(255, 255, 255, 0.2);
   overflow-y: auto;
-  transition: none;                 /* display bilan ishlaganda transition kerak emas */
 }
 
 .mobile-menu.open {
-  display: flex;                    /* menyu ochilganda koʻrinadi */
+  display: flex;
 }
 
-/* ============================================================
-   MOBILE MENU HEADER
-   ============================================================ */
 .mobile-header {
   display: flex;
   align-items: center;
@@ -339,9 +314,6 @@
   transform: rotate(90deg);
 }
 
-/* ============================================================
-   MOBILE LINKS
-   ============================================================ */
 .mobile-links {
   flex: 1;
   padding: 16px 20px;
@@ -385,9 +357,6 @@
   margin: 12px 0;
 }
 
-/* ============================================================
-   MOBILE USER INFO
-   ============================================================ */
 .mobile-user-info {
   padding: 16px 18px;
   background: rgba(241, 245, 249, 0.4);
@@ -457,19 +426,158 @@
   transform: scale(0.98);
 }
 
-/* ============================================================
-   ANIMATIONS
-   ============================================================ */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.3s ease;
+  padding: 20px;
+}
+
+.modal {
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  max-width: 460px;
+  width: 100%;
+  padding: 32px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.1);
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.modal-header h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.modal-close {
+  background: rgba(241, 245, 249, 0.6);
+  border: none;
+  font-size: 20px;
+  color: #64748b;
+  cursor: pointer;
+  padding: 8px 10px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.field input[type="text"],
+.field input[type="file"] {
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  background: rgba(255, 255, 255, 0.5);
+  transition: all 0.2s ease;
+}
+
+.field input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+  background: white;
+}
+
+.preview {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-top: 10px;
+  border: 3px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.btn-cancel,
+.btn-save {
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn-cancel {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.btn-cancel:hover {
+  background: #e2e8f0;
+}
+
+.btn-save {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.25);
+}
+
+.btn-save:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35);
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-/* ============================================================
-   RESPONSIVE
-   ============================================================ */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
 
-/* Planshet va mobil – menyu ko‘rsatiladi */
 @media (max-width: 1024px) {
   .nav-links {
     display: none;
@@ -486,20 +594,18 @@
   }
 }
 
-/* Desktop – mobil menyu va overlay butunlay yashiriladi */
 @media (min-width: 1025px) {
   .burger {
     display: none;
   }
   .mobile-menu {
-    display: none !important;    /* desktopda hech qachon ko‘rinmaydi */
+    display: none !important;
   }
   .overlay {
     display: none !important;
   }
 }
 
-/* Kichik telefon */
 @media (max-width: 480px) {
   .navbar {
     height: 56px;

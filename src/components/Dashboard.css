@@ -1,13 +1,9 @@
-/* src/components/Dashboard.css */
-
-/* ===== ASOSIY KONTEYNER ===== */
 .dashboard {
   padding: 20px 16px 30px;
   max-width: 1200px;
   margin: 0 auto;
 }
 
-/* ===== HEADER ===== */
 .dashboard-header {
   display: flex;
   justify-content: space-between;
@@ -41,7 +37,6 @@
   white-space: nowrap;
 }
 
-/* ===== STATS KARTALARI ===== */
 .stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -121,7 +116,6 @@
   margin-left: 4px;
 }
 
-/* ===== STATUS BAR ===== */
 .status-bar {
   display: flex;
   gap: 16px 28px;
@@ -160,7 +154,6 @@
 .status.reserved .dot { background: #f59e0b; }
 .status.cleaning .dot { background: #8b5cf6; }
 
-/* ===== SECTIONS (umumiy) ===== */
 .section {
   background: white;
   border-radius: 16px;
@@ -190,7 +183,6 @@
   font-size: 20px;
 }
 
-/* ===== BEST SELLERS ===== */
 .bestsellers {
   display: flex;
   flex-direction: column;
@@ -242,7 +234,6 @@
   white-space: nowrap;
 }
 
-/* ===== RECENT ORDERS ===== */
 .recent {
   display: flex;
   flex-direction: column;
@@ -298,7 +289,6 @@
   font-weight: 500;
 }
 
-/* ===== EMPTY STATE ===== */
 .empty {
   color: #94a3b8;
   font-size: 15px;
@@ -306,16 +296,10 @@
   text-align: center;
 }
 
-/* ======================================================
-   RESPONSIVE
-   ====================================================== */
-
-/* Telefon (≤ 600px) */
 @media (max-width: 600px) {
   .dashboard {
     padding: 14px 10px 20px;
   }
-
   .dashboard-header h2 {
     font-size: 20px;
   }
@@ -323,25 +307,21 @@
     font-size: 12px;
     padding: 4px 12px;
   }
-
   .stats {
     grid-template-columns: 1fr 1fr;
     gap: 10px;
   }
-
   .stat {
     padding: 14px 12px;
     gap: 10px;
     border-radius: 14px;
   }
-
   .stat-icon {
     width: 40px;
     height: 40px;
     font-size: 20px;
     border-radius: 12px;
   }
-
   .stat-label {
     font-size: 10px;
   }
@@ -351,7 +331,6 @@
   .stat-value small {
     font-size: 12px;
   }
-
   .status-bar {
     padding: 10px 14px;
     gap: 8px 16px;
@@ -363,7 +342,6 @@
     width: 10px;
     height: 10px;
   }
-
   .section {
     padding: 14px 14px;
     border-radius: 14px;
@@ -371,7 +349,6 @@
   .section-title {
     font-size: 15px;
   }
-
   .bestseller {
     padding: 6px 10px;
     gap: 10px;
@@ -387,7 +364,6 @@
   .bestseller .count {
     font-size: 13px;
   }
-
   .recent-item {
     padding: 6px 10px;
     gap: 8px;
@@ -411,7 +387,6 @@
   }
 }
 
-/* Juda kichik telefon (≤ 400px) */
 @media (max-width: 400px) {
   .stats {
     gap: 6px;
@@ -444,7 +419,6 @@
   }
 }
 
-/* Planshet (601px – 768px) */
 @media (min-width: 601px) and (max-width: 768px) {
   .stats {
     grid-template-columns: repeat(2, 1fr);
@@ -461,7 +435,6 @@
   }
 }
 
-/* Desktop (≥ 769px) */
 @media (min-width: 769px) {
   .stats {
     grid-template-columns: repeat(4, 1fr);

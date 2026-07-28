@@ -9,9 +9,11 @@ import {
   FaEye,
   FaEyeSlash,
   FaUtensils,
-  FaUserTie,
+  FaShieldAlt,
+  FaConciergeBell,
   FaFire,
-  FaGlassCheers
+  FaGlassCheers,
+  FaChevronDown
 } from "react-icons/fa";
 import "./Login.css";
 
@@ -23,8 +25,8 @@ const USERS = [
     password: "admin123",
     role: "admin",
     name: "Admin User",
-    icon: "👑",
-    color: "#6366f1"
+    icon: <FaShieldAlt />,
+    color: "#e9ae72"
   },
   {
     id: 2,
@@ -32,8 +34,8 @@ const USERS = [
     password: "waiter123",
     role: "waiter",
     name: "Ofitsiant 1",
-    icon: "👨‍💼",
-    color: "#10b981"
+    icon: <FaConciergeBell />,
+    color: "#60a5fa"
   },
   {
     id: 3,
@@ -41,8 +43,8 @@ const USERS = [
     password: "waiter123",
     role: "waiter",
     name: "Ofitsiant 2",
-    icon: "👨‍💼",
-    color: "#10b981"
+    icon: <FaConciergeBell />,
+    color: "#60a5fa"
   },
   {
     id: 4,
@@ -50,7 +52,7 @@ const USERS = [
     password: "kitchen123",
     role: "kitchen",
     name: "Oshxona Xodimi",
-    icon: "👨‍🍳",
+    icon: <FaFire />,
     color: "#f59e0b"
   },
   {
@@ -59,8 +61,8 @@ const USERS = [
     password: "bar123",
     role: "bar",
     name: "Bar Xodimi",
-    icon: "🍹",
-    color: "#ef4444"
+    icon: <FaGlassCheers />,
+    color: "#34d399"
   }
 ];
 
@@ -74,9 +76,9 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [selectedRole, setSelectedRole] = useState(null);
+  const [showQuickMenu, setShowQuickMenu] = useState(false);
 
-  // Sahifa yuklanganda - eslab qolingan username ni yuklash
+  // Sahifa yuklanganda
   useEffect(() => {
     const remembered = localStorage.getItem("rememberedUser");
     if (remembered) {
@@ -84,7 +86,6 @@ function Login() {
       setRememberMe(true);
     }
 
-    // Agar login qilingan bo'lsa, home ga yo'naltirish
     const currentUser = localStorage.getItem("currentUser");
     if (currentUser) {
       try {
@@ -98,32 +99,29 @@ function Login() {
     }
   }, [navigate]);
 
-  // Tezkor login - rol tanlash orqali
+  // Tezkor login
   const handleQuickLogin = (user) => {
     setUsername(user.username);
     setPassword(user.password);
-    setSelectedRole(user.role);
-    
-    // Avtomatik login
+    setShowQuickMenu(false);
+
     setTimeout(() => {
       performLogin(user.username, user.password);
     }, 300);
   };
 
-  // Login qilish
+  // Login qilish funksiyasi
   const performLogin = (usernameInput, passwordInput) => {
     const user = USERS.find(
       (u) => u.username === usernameInput && u.password === passwordInput
     );
 
     if (user) {
-      // Foydalanuvchi ma'lumotlarini saqlash
       const userData = {
         id: user.id,
         username: user.username,
         role: user.role,
         name: user.name,
-        icon: user.icon,
         color: user.color,
         isLoggedIn: true,
         loginTime: new Date().toISOString()
@@ -131,30 +129,25 @@ function Login() {
 
       localStorage.setItem("currentUser", JSON.stringify(userData));
 
-      // Eslab qolish
       if (rememberMe) {
         localStorage.setItem("rememberedUser", usernameInput);
       } else {
         localStorage.removeItem("rememberedUser");
       }
 
-      toast.success(`✅ Xush kelibsiz, ${user.name}!`, {
-        position: "top-center",
-        autoClose: 1500
+      toast.success(`Xush kelibsiz, ${user.name}!`, {
+        position: "top-right",
+        autoClose: 1500,
+        theme: "colored"
       });
 
-      // Role bo'yicha yo'naltirish
       setTimeout(() => {
         switch (user.role) {
           case "admin":
-            navigate("/", { replace: true });
-            break;
           case "waiter":
             navigate("/", { replace: true });
             break;
           case "kitchen":
-            navigate("/kitchen", { replace: true });
-            break;
           case "bar":
             navigate("/kitchen", { replace: true });
             break;
@@ -172,196 +165,142 @@ function Login() {
   const handleLogin = (e) => {
     e.preventDefault();
 
-    // Validatsiya
     if (!username.trim()) {
-      toast.error("❌ Foydalanuvchi nomini kiriting!");
+      toast.error("Foydalanuvchi nomini kiriting!", { theme: "colored" });
       return;
     }
     if (!password.trim()) {
-      toast.error("❌ Parolni kiriting!");
+      toast.error("Parolni kiriting!", { theme: "colored" });
       return;
     }
 
     setLoading(true);
 
-    // Simulate API call
     setTimeout(() => {
       const success = performLogin(username.trim(), password);
 
       if (!success) {
-        toast.error("❌ Username yoki password noto'g'ri!");
+        toast.error("Username yoki parol noto'g'ri!", { theme: "colored" });
       }
 
       setLoading(false);
     }, 800);
   };
 
-  // Enter tugmasi bilan login
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      handleLogin(e);
-    }
-  };
-
   return (
-    <div className="login-page">
-      <div className="login-container">
-        {/* ===== LOGIN CARD ===== */}
-        <div className="login-card">
-          {/* Header */}
-          <div className="login-header">
-            <div className="login-logo">🍽️</div>
-            <h1 className="login-title">SODIQJON</h1>
-            <p className="login-subtitle">Restoran Boshqaruv Tizimi</p>
-            <div className="login-version">v2.0</div>
+    <div className="mobile-app-wrapper">
+      <div className="app-screen-content">
+        {/* Header */}
+        <div className="app-header">
+          <div className="app-logo-box">
+            <FaUtensils />
+          </div>
+          <h2>SODIQJON</h2>
+          <p>Mobil Restoran Tizimi</p>
+        </div>
+
+        {/* Login Formasi */}
+        <form onSubmit={handleLogin} className="app-form">
+          <div className="app-input-group">
+            <label>Foydalanuvchi nomi</label>
+            <div className="app-input-box">
+              <FaUser className="input-ico" />
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Username"
+                disabled={loading}
+              />
+            </div>
           </div>
 
-          {/* Login Form */}
-          <form onSubmit={handleLogin} className="login-form" onKeyDown={handleKeyDown}>
-            {/* Username */}
-            <div className="login-form-group">
-              <label className="login-label">
-                <FaUser /> Foydalanuvchi nomi
-              </label>
-              <div className="login-input-wrap">
-                <FaUser className="login-input-icon" />
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => {
-                    setUsername(e.target.value);
-                    setSelectedRole(null);
-                  }}
-                  placeholder="Username kiriting"
-                  className="login-input"
-                  autoComplete="username"
-                  disabled={loading}
-                />
+          <div className="app-input-group">
+            <label>Parol</label>
+            <div className="app-input-box">
+              <FaLock className="input-ico" />
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Parol"
+                disabled={loading}
+              />
+              <button
+                type="button"
+                className="eye-btn"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
+          </div>
+
+          <div className="app-options">
+            <label className="remember-box">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
+              <span>Eslab qolish</span>
+            </label>
+          </div>
+
+          <button type="submit" className="app-login-btn" disabled={loading}>
+            {loading ? (
+              <div className="spinner-box">
+                <span className="spinner"></span>
+                <span>Kirilmoqda...</span>
               </div>
-            </div>
+            ) : (
+              <>
+                <span>Tizimga kirish</span>
+                <FaSignInAlt />
+              </>
+            )}
+          </button>
+        </form>
 
-            {/* Password */}
-            <div className="login-form-group">
-              <label className="login-label">
-                <FaLock /> Parol
-              </label>
-              <div className="login-input-wrap">
-                <FaLock className="login-input-icon" />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setSelectedRole(null);
-                  }}
-                  placeholder="Parol kiriting"
-                  className="login-input"
-                  autoComplete="current-password"
-                  disabled={loading}
-                />
-                <button
-                  type="button"
-                  className="login-password-toggle"
-                  onClick={() => setShowPassword(!showPassword)}
-                  tabIndex={-1}
-                >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
-                </button>
-              </div>
-            </div>
+        {/* Tezkor / Demo Rol tanlash */}
+        <div className="quick-dropdown-container">
+          <button
+            type="button"
+            className="quick-toggle-btn"
+            onClick={() => setShowQuickMenu(!showQuickMenu)}
+          >
+            <span>⚡ Tezkor / Demo rollar orqali kirish</span>
+            <FaChevronDown className={`chevron ${showQuickMenu ? "rotate" : ""}`} />
+          </button>
 
-            {/* Options */}
-            <div className="login-options">
-              <label className="login-remember">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  disabled={loading}
-                />
-                <span>Eslab qolish</span>
-              </label>
-            </div>
-
-            {/* Submit Button */}
-            <button 
-              type="submit" 
-              className="login-btn" 
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <span className="login-spinner"></span>
-                  Kutilmoqda...
-                </>
-              ) : (
-                <>
-                  <FaSignInAlt /> Tizimga kirish
-                </>
-              )}
-            </button>
-          </form>
-
-          {/* ===== TEZKOR LOGIN ===== */}
-          <div className="login-quick-section">
-            <h4 className="login-quick-title">Tezkor kirish</h4>
-            <div className="login-quick-grid">
+          {showQuickMenu && (
+            <div className="quick-dropdown-list">
               {USERS.map((user) => (
-                <button
+                <div
                   key={user.id}
-                  className={`login-quick-card ${selectedRole === user.role ? "active" : ""}`}
+                  className="quick-item"
                   onClick={() => handleQuickLogin(user)}
-                  style={{
-                    borderColor: selectedRole === user.role ? user.color : "transparent"
-                  }}
-                  disabled={loading}
                 >
-                  <span className="login-quick-icon">{user.icon}</span>
-                  <div className="login-quick-info">
+                  <span className="qi-icon" style={{ color: user.color }}>
+                    {user.icon}
+                  </span>
+                  <div className="qi-text">
                     <strong>{user.name}</strong>
-                    <span className="login-quick-role">
-                      {user.role === "admin" && "👑 Admin"}
-                      {user.role === "waiter" && "👨‍💼 Ofitsiant"}
-                      {user.role === "kitchen" && "👨‍🍳 Oshxona"}
-                      {user.role === "bar" && "🍹 Bar"}
-                    </span>
+                    <small>{user.username} / {user.password}</small>
                   </div>
-                </button>
+                </div>
               ))}
             </div>
-          </div>
-
-          {/* ===== DEMO CREDENTIALS ===== */}
-          <div className="login-demo">
-            <h4>📋 Demo ma'lumotlar</h4>
-            <div className="demo-grid">
-              <div className="demo-item">
-                <span className="demo-role">👑 Admin:</span>
-                <code>admin / admin123</code>
-              </div>
-              <div className="demo-item">
-                <span className="demo-role">👨‍💼 Ofitsiant:</span>
-                <code>waiter1 / waiter123</code>
-              </div>
-              <div className="demo-item">
-                <span className="demo-role">👨‍🍳 Oshxona:</span>
-                <code>kitchen / kitchen123</code>
-              </div>
-              <div className="demo-item">
-                <span className="demo-role">🍹 Bar:</span>
-                <code>bar / bar123</code>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Footer */}
-        <div className="login-footer">
-          <p>© 2024 SODIQJON Restorani. Barcha huquqlar himoyalangan.</p>
+        <div className="app-footer">
+          <p>© 2026 SODIQJON Mobile SDK</p>
         </div>
       </div>
 
-      <ToastContainer />
+      <ToastContainer position="top-center" autoClose={1800} />
     </div>
   );
 }
